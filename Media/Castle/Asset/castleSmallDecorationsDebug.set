@@ -1,0 +1,111 @@
+// Created with FBXConvert.exe (Oct  5 2012 06:49:44)
+[node 0]
+type = null
+name = roundGrp5
+parent = -1
+matrixRow0 = 0.527032 0 -0.849845 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = 0.849845 -0 0.527032 0
+matrixRow3 = 51.0472 7 -34.881 1
+[node 1]
+type = model
+name = round5
+parent = 0
+matrixRow0 = 1 0 -0 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = -0 -0 1 0
+matrixRow3 = 0 0 -0 1
+BoundingBoxCenter = 0.40728 5.3389 -0.115649 
+BoundingBoxHalf = 6.23015 0.0538635 5.44472 
+meshcount = 1
+material0 = castleMaterial9
+[node 2]
+type = model
+name = round6
+parent = 0
+matrixRow0 = 1 0 -0 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = -0 -0 1 0
+matrixRow3 = 0 0 -0 1
+BoundingBoxCenter = 0.415005 4.99304 -1.29941 
+BoundingBoxHalf = 6.17245 0.435364 6.53796 
+meshcount = 1
+material0 = castleMaterial12
+[node 3]
+type = null
+name = roundGrp6
+parent = -1
+matrixRow0 = -0.236317 0 -0.971676 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = 0.971676 -0 -0.236317 0
+matrixRow3 = 112.351 7 -55.3215 1
+[node 4]
+type = model
+name = round5
+parent = 3
+matrixRow0 = 1 1.61671e-033 -0 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = -0 -0 1 0
+matrixRow3 = 0 0 -0 1
+BoundingBoxCenter = 0.40728 5.3389 -0.115649 
+BoundingBoxHalf = 6.23015 0.0538635 5.44472 
+instance = 1
+meshcount = 1
+material0 = castleMaterial9
+[node 5]
+type = model
+name = round6
+parent = 3
+matrixRow0 = 1 1.61671e-033 -0 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = -0 -0 1 0
+matrixRow3 = 0 0 -0 1
+BoundingBoxCenter = 0.415005 4.99304 -1.29941 
+BoundingBoxHalf = 6.17245 0.435364 6.53796 
+instance = 2
+meshcount = 1
+material0 = castleMaterial12
+[node 6]
+type = null
+name = straightGrp40
+parent = -1
+matrixRow0 = 0.309017 0 0.951057 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = -0.951057 -0 0.309017 0
+matrixRow3 = 59.006 7 -39.6231 1
+[node 7]
+type = model
+name = straight5
+parent = 6
+matrixRow0 = 1 0 -0 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = -0 -0 1 0
+matrixRow3 = 0 0 -0 1
+BoundingBoxCenter = 0.347858 5.98111 -1.5329 
+BoundingBoxHalf = 2.39404 0.645782 4.77179 
+meshcount = 1
+material0 = castleMaterial4
+[node 8]
+type = model
+name = straight6
+parent = 6
+matrixRow0 = 1 0 -0 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = -0 -0 1 0
+matrixRow3 = 0 0 -0 1
+BoundingBoxCenter = 0.427083 5.94348 -0.911545 
+BoundingBoxHalf = 3.97205 0.673707 5.81258 
+meshcount = 1
+material0 = castleMaterial9
+[node 9]
+type = model
+name = straight7
+parent = 6
+matrixRow0 = 1 0 -0 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = -0 -0 1 0
+matrixRow3 = 0 0 -0 1
+BoundingBoxCenter = 0.413899 5.60025 -1.28838 
+BoundingBoxHalf = 3.89392 1.04257 5.52376 
+meshcount = 1
+material0 = castleMaterial12

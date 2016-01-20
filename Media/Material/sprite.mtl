@@ -1,0 +1,11 @@
+texture0 = $shadow_depth
+
+VertexShaderFile    = sprite.fx
+VertexShaderMain    = VSMain
+VertexShaderProfile = vs_4_0
+
+PixelShaderFile     = sprite.fx
+PixelShaderMain     = PSMain
+PixelShaderProfile  = ps_4_0
+
+RenderStateFile     = sprite.rs

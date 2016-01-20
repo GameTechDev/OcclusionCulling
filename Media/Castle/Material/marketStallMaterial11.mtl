@@ -1,0 +1,10 @@
+texture0 = PRP_HayBale_A_Alpha.dds
+texture1 = PRP_HayBale_A_Alpha_NM.dds
+texture1Srgb = false
+VertexShaderFile    = DefaultShaderAlpha.fx
+VertexShaderMain    = VSMain
+VertexShaderProfile = vs_4_0
+PixelShaderFile     = DefaultShaderAlpha.fx
+PixelShaderMain     = PSMain
+PixelShaderProfile  = ps_4_0
+RenderStateFile     = DefaultAlpha.rs

@@ -1,0 +1,8 @@
+texture0 = skyDiffuse.dds
+VertexShaderFile    = $DefaultShader
+VertexShaderMain    = VSMain
+VertexShaderProfile = vs_4_0
+PixelShaderFile     = Prelit.fx
+PixelShaderMain     = PSMain
+PixelShaderProfile  = ps_4_0
+RenderStateFile     = $DefaultRenderStates

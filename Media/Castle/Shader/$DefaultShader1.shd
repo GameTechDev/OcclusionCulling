@@ -1,0 +1,4 @@
+texture0 =  texture( name="texture_DM", uv=uv0 * 1 )
+texture1 =  texture( name="texture_SM", uv=uv0 * 1 )
+texture2 =  (texture( name="texture_NM", uv=uv0 * 1 ) *2 -1)
+ambient = diffuse

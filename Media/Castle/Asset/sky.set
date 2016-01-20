@@ -1,0 +1,13 @@
+// Created with FBXConvert.exe (Oct  5 2012 06:49:44)
+[node 0]
+type = model
+name = sky
+parent = -1
+matrixRow0 = 1 0 -0 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = -0 -0 1 0
+matrixRow3 = 0 0 -0 1
+BoundingBoxCenter = 97.9876 5.69128 -3.80588 
+BoundingBoxHalf = 717.077 717.077 717.077 
+meshcount = 1
+material0 = skyMaterial

@@ -1,0 +1,263 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{31482A3C-2E8F-4254-ABFA-0AF5F68D756C}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>CPUT</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="CPUT.h" />
+    <ClInclude Include="CPUTAssetLibrary.h" />
+    <ClInclude Include="CPUTAssetLibraryDX11.h" />
+    <ClInclude Include="CPUTAssetSet.h" />
+    <ClInclude Include="CPUTAssetSetDX11.h" />
+    <ClInclude Include="CPUTBuffer.h" />
+    <ClInclude Include="CPUTBufferDX11.h" />
+    <ClInclude Include="CPUTButton.h" />
+    <ClInclude Include="CPUTCallbackHandler.h" />
+    <ClInclude Include="CPUTCamera.h" />
+    <ClInclude Include="CPUTCheckbox.h" />
+    <ClInclude Include="CPUTComputeShaderDX11.h" />
+    <ClInclude Include="CPUTConfigBlock.h" />
+    <ClInclude Include="CPUTControl.h" />
+    <ClInclude Include="CPUTDomainShaderDX11.h" />
+    <ClInclude Include="CPUTDropdown.h" />
+    <ClInclude Include="CPUTEventHandler.h" />
+    <ClInclude Include="CPUTFont.h" />
+    <ClInclude Include="CPUTFontDX11.h" />
+    <ClInclude Include="CPUTFrustum.h" />
+    <ClInclude Include="CPUTGeometryShaderDX11.h" />
+    <ClInclude Include="CPUTGuiController.h" />
+    <ClInclude Include="CPUTGuiControllerDX11.h" />
+    <ClInclude Include="CPUTHullShaderDX11.h" />
+    <ClInclude Include="CPUTInputLayoutCache.h" />
+    <ClInclude Include="CPUTInputLayoutCacheDX11.h" />
+    <ClInclude Include="CPUTITTTaskMarker.h" />
+    <ClInclude Include="CPUTLight.h" />
+    <ClInclude Include="CPUTMaterial.h" />
+    <ClInclude Include="CPUTMaterialDX11.h" />
+    <ClInclude Include="CPUTMath.h" />
+    <ClInclude Include="CPUTMesh.h" />
+    <ClInclude Include="CPUTMeshDX11.h" />
+    <ClInclude Include="CPUTModel.h" />
+    <ClInclude Include="CPUTModelDX11.h" />
+    <ClInclude Include="CPUTNullNode.h" />
+    <ClInclude Include="CPUTOSServicesWin.h" />
+    <ClInclude Include="CPUTPerfTaskMarker.h" />
+    <ClInclude Include="CPUTPixelShaderDX11.h" />
+    <ClInclude Include="CPUTPostProcess.h" />
+    <ClInclude Include="CPUTRefCount.h" />
+    <ClInclude Include="CPUTRenderNode.h" />
+    <ClInclude Include="CPUTRenderParams.h" />
+    <ClInclude Include="CPUTRenderParamsDX.h" />
+    <ClInclude Include="CPUTRenderStateBlock.h" />
+    <ClInclude Include="CPUTRenderStateBlockDX11.h" />
+    <ClInclude Include="CPUTRenderStateMapsDX11.h" />
+    <ClInclude Include="CPUTRenderTarget.h" />
+    <ClInclude Include="CPUTResource.h" />
+    <ClInclude Include="CPUTShaderDX11.h" />
+    <ClInclude Include="CPUTSlider.h" />
+    <ClInclude Include="CPUTSprite.h" />
+    <ClInclude Include="CPUTText.h" />
+    <ClInclude Include="CPUTTexture.h" />
+    <ClInclude Include="CPUTTextureDX11.h" />
+    <ClInclude Include="CPUTTimer.h" />
+    <ClInclude Include="CPUTTimerWin.h" />
+    <ClInclude Include="CPUTVertexShaderDX11.h" />
+    <ClInclude Include="CPUTWindowWin.h" />
+    <ClInclude Include="CPUT_DX11.h" />
+    <ClInclude Include="CRTMemoryDebug.h" />
+    <ClInclude Include="DDSTextureLoader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CPUTAssetLibrary.cpp" />
+    <ClCompile Include="CPUTAssetLibraryDX11.cpp" />
+    <ClCompile Include="CPUTAssetSet.cpp" />
+    <ClCompile Include="CPUTAssetSetDX11.cpp" />
+    <ClCompile Include="CPUTBufferDX11.cpp" />
+    <ClCompile Include="CPUTButton.cpp" />
+    <ClCompile Include="CPUTCamera.cpp" />
+    <ClCompile Include="CPUTCheckbox.cpp" />
+    <ClCompile Include="CPUTComputeShaderDX11.cpp" />
+    <ClCompile Include="CPUTConfigBlock.cpp" />
+    <ClCompile Include="CPUTControl.cpp" />
+    <ClCompile Include="CPUTDomainShaderDX11.cpp" />
+    <ClCompile Include="CPUTDropdown.cpp" />
+    <ClCompile Include="CPUTFont.cpp" />
+    <ClCompile Include="CPUTFontDX11.cpp" />
+    <ClCompile Include="CPUTFrustum.cpp" />
+    <ClCompile Include="CPUTGeometryShaderDX11.cpp" />
+    <ClCompile Include="CPUTGuiController.cpp" />
+    <ClCompile Include="CPUTGuiControllerDX11.cpp" />
+    <ClCompile Include="CPUTHullShaderDX11.cpp" />
+    <ClCompile Include="CPUTInputLayoutCacheDX11.cpp" />
+    <ClCompile Include="CPUTITTTaskMarker.cpp" />
+    <ClCompile Include="CPUTLight.cpp" />
+    <ClCompile Include="CPUTMaterial.cpp" />
+    <ClCompile Include="CPUTMaterialDX11.cpp" />
+    <ClCompile Include="CPUTMesh.cpp" />
+    <ClCompile Include="CPUTMeshDX11.cpp" />
+    <ClCompile Include="CPUTModel.cpp" />
+    <ClCompile Include="CPUTModelDX11.cpp" />
+    <ClCompile Include="CPUTNullNode.cpp" />
+    <ClCompile Include="CPUTOSServicesWin.cpp" />
+    <ClCompile Include="CPUTPerfTaskMarker.cpp" />
+    <ClCompile Include="CPUTPixelShaderDX11.cpp" />
+    <ClCompile Include="CPUTPostProcess.cpp" />
+    <ClCompile Include="CPUTRenderNode.cpp" />
+    <ClCompile Include="CPUTRenderStateBlock.cpp" />
+    <ClCompile Include="CPUTRenderStateBlockDX11.cpp" />
+    <ClCompile Include="CPUTRenderTarget.cpp" />
+    <ClCompile Include="CPUTShaderDX11.cpp" />
+    <ClCompile Include="CPUTSlider.cpp" />
+    <ClCompile Include="CPUTSprite.cpp" />
+    <ClCompile Include="CPUTText.cpp" />
+    <ClCompile Include="CPUTTexture.cpp" />
+    <ClCompile Include="CPUTTextureDX11.cpp" />
+    <ClCompile Include="CPUTTimerWin.cpp" />
+    <ClCompile Include="CPUTVertexShaderDX11.cpp" />
+    <ClCompile Include="CPUTWindowWin.cpp" />
+    <ClCompile Include="CPUT_DX11.cpp" />
+    <ClCompile Include="DDSTextureLoader.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

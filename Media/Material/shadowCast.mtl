@@ -1,0 +1,7 @@
+ReceiveShadows      = false
+
+VertexShaderFile    = shadowCast.fx
+VertexShaderMain    = VSMain
+VertexShaderProfile = vs_4_0
+
+RenderStateFile     = shadowCast.rs

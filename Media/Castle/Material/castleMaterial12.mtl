@@ -1,0 +1,10 @@
+texture0 = PRP_Rope_DM.dds
+texture1 = PRP_Rope_NM.dds
+texture1Srgb = false
+VertexShaderFile    = DefaultShader.fx
+VertexShaderMain    = VSMain
+VertexShaderProfile = vs_4_0
+PixelShaderFile     = DefaultShader.fx
+PixelShaderMain     = PSMain
+PixelShaderProfile  = ps_4_0
+RenderStateFile     = $DefaultRenderStates

@@ -1,0 +1,23 @@
+maskRock = texture( name="maskRock" )
+maskWall = texture( name="maskWall" )
+
+NMlayer1= texture( name="normalRock", uv=uv0 * (10,10)) *2 - 1
+NMlayer2= texture( name="normalGrass", uv=uv0 * (30,30)) *2 -1
+NMlayer3= texture( name="normalWall", uv=uv0 * (60,60)) *2 -1
+
+DMlayer1= texture( name="diffuseRock", uv=uv0 * (10,10) )
+DMlayer2= texture( name="diffuseGrass", uv=uv0 * (30,30) )
+DMlayer3= texture( name="diffusewall", uv=uv0 * (60,60) )
+DMlayer4= texture( name="ambient" )
+
+normalLerp1 = lerp (NMlayer2, NMlayer1, maskRock) 
+normalLerp2 = lerp (normalLerp1, NMlayer3, maskWall) 
+
+diffuseLerp1 = lerp (DMlayer2, DMlayer1, maskRock) 
+diffuseLerp2 = lerp (diffuseLerp1, DMlayer3, maskWall)
+diffuseLerp3 = lerp (diffuseLerp2, DMlayer4, (DMlayer4.a*1.5)) 
+
+diffuse = diffuseLerp3
+normal = normalLerp2
+specular = diffuseLerp2 * .5
+ambient = diffuseLerp2 

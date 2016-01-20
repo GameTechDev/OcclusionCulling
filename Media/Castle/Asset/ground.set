@@ -1,0 +1,13 @@
+// Created with FBXConvert.exe (Oct  5 2012 06:49:44)
+[node 0]
+type = model
+name = ground_polySurface1
+parent = -1
+matrixRow0 = 1 0 -0 0
+matrixRow1 = 0 1 -0 0
+matrixRow2 = -0 -0 1 0
+matrixRow3 = 0 0 -0 1
+BoundingBoxCenter = 96.2614 -49.8774 -5.48519 
+BoundingBoxHalf = 107.572 55.5963 110.725 
+meshcount = 1
+material0 = groundMaterial

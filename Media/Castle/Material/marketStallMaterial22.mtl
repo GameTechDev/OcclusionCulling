@@ -1,0 +1,10 @@
+texture0 = PRP_RandomWood_B_DM.dds
+texture1 = PRP_RandomWood_B_NM.dds
+texture1Srgb = false
+VertexShaderFile    = DefaultShader.fx
+VertexShaderMain    = VSMain
+VertexShaderProfile = vs_4_0
+PixelShaderFile     = DefaultShader.fx
+PixelShaderMain     = PSMain
+PixelShaderProfile  = ps_4_0
+RenderStateFile     = $DefaultRenderStates
