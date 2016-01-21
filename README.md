@@ -7,7 +7,7 @@ For a detailed explanation, please see this [article](https://software.intel.com
 Requirements
 ============
 - Windows 8 or later
-- Visual Studio 2012 or higher
+- Visual Studio 2015 or higher
 
 
  
