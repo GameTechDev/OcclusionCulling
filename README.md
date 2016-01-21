@@ -4,6 +4,10 @@ The technique used in this sample divides scene objects into occluders and occlu
 
 For a detailed explanation, please see this [article](https://software.intel.com/en-us/articles/software-occlusion-culling).
 
+Build Notes
+===========
+The sample will not execute properly when run from within Visual Studio unless the 'Working Directory' is set to $(TargetDir).
+
 Requirements
 ============
 - Windows 8 or later
