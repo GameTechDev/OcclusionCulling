@@ -29,6 +29,8 @@
 #include "DepthBufferRasterizerSSEST.h"
 #include "DepthBufferRasterizerSSEMT.h"
 
+#include "DepthBufferMaskedRasterizerAVXST.h"
+
 #include "DepthBufferRasterizerAVXST.h"
 #include "DepthBufferRasterizerAVXMT.h"
 
@@ -37,6 +39,8 @@
 
 #include "AABBoxRasterizerSSEST.h"
 #include "AABBoxRasterizerSSEMT.h"
+
+#include "AABBoxMaskedRasterizerAVXST.h"
 
 #include "AABBoxRasterizerAVXST.h"
 #include "AABBoxRasterizerAVXMT.h"
@@ -124,6 +128,7 @@ private:
 	DepthBufferRasterizerSSEMT		*mpDBRSSEMT;
 	DepthBufferRasterizerAVXST		*mpDBRAVXST;
 	DepthBufferRasterizerAVXMT		*mpDBRAVXMT;
+	DepthBufferMaskedRasterizerAVXST *mpDBMRAVXST;
 
 	AABBoxRasterizer				*mpAABB;
 	AABBoxRasterizerScalarST		*mpAABBScalarST;
@@ -132,6 +137,7 @@ private:
 	AABBoxRasterizerSSEMT			*mpAABBSSEMT;
 	AABBoxRasterizerAVXST			*mpAABBAVXST;
 	AABBoxRasterizerAVXMT			*mpAABBAVXMT;
+	AABBoxMaskedRasterizerAVXST		*mpAABBMAVXST;
 
 	UINT				mNumOccluders;
 	UINT				mNumOccludersR2DB;
@@ -164,194 +170,11 @@ private:
 	UINT				mPrevIdx;
 	bool				mFirstFrame;
 
+	void				SetupOcclusionCullingObjects();
+
 public:
-	MySample() :
-		mpCameraController(NULL),
-		mpDebugSprite(NULL),
-		mpShadowCameraSet(NULL),
-		mpShadowRenderTarget(NULL),
-		mpFPSCounter(NULL),
-		mpTypeDropDown(NULL),
-		mpOccludersText(NULL),
-		mpNumOccludersText(NULL),
-		mpOccludersR2DBText(NULL),
-		mpOccluderTrisText(NULL),
-		mpOccluderRasterizedTrisText(NULL),
-		mpRasterizeTimeText(NULL),
-		mpOccluderSizeSlider(NULL),
-		mpOccludeesText(NULL),
-		mpNumOccludeesText(NULL),
-		mpCulledText(NULL),
-		mpVisibleText(NULL),
-		mpOccludeeTrisText(NULL),
-		mpCulledTrisText(NULL),
-		mpVisibleTrisText(NULL),
-		mpDepthTestTimeText(NULL),
-		mpOccludeeSizeSlider(NULL),
-		mpTotalCullTimeText(NULL),
-		mpCullingCheckBox(NULL),
-		mpFCullingCheckBox(NULL),
-		mpDBCheckBox(NULL),
-		mpBBCheckBox(NULL),
-		mpTasksCheckBox(NULL),
-		mpVsyncCheckBox(NULL),
-		mpPipelineCheckBox(NULL),
-		mpDrawCallsText(NULL),
-		mpDepthTestTaskSlider(NULL),
-		mpGPUDepthBuf(NULL),
-		mSOCType(gSOCType),
-		mNumOccluders(0),
-		mNumOccludersR2DB(0),
-		mNumOccluderTris(0),
-		mNumOccluderRasterizedTris(0),
-		mRasterizeTime(0.0),
-		mOccluderSizeThreshold(gOccluderSizeThreshold),
-		mNumCulled(0),
-		mNumVisible(0),
-		mNumOccludeeTris(0),
-		mNumOccludeeCulledTris(0),
-		mNumOccludeeVisibleTris(0),
-		mDepthTestTime(0.0),
-		mOccludeeSizeThreshold(gOccludeeSizeThreshold),
-		mTotalCullTime(0.0),
-		mEnableCulling(true),
-		mEnableFCulling(true),
-		mViewDepthBuffer(false),
-		mViewBoundingBox(false),
-		mEnableTasks(true),
-		mPipeline(false),
-		mNumDrawCalls(0),
-		mNumDepthTestTasks(gDepthTestTasks),
-		mCurrIdx(0),
-		mPrevIdx(1),
-		mFirstFrame(true)
-    {
-		mpCPURenderTargetScalar[0] = NULL;
-		mpCPURenderTargetScalar[1] = NULL;
-
-		mpCPURenderTargetSSE[0] = NULL;
-		mpCPURenderTargetSSE[1] = NULL;
-
-		mpCPURenderTargetAVX[0] = NULL;
-		mpCPURenderTargetAVX[1] = NULL;
-
-		mpCPURenderTarget[0] = NULL;
-		mpCPURenderTarget[1] = NULL;
-
-		mpCPUSRVScalar[0] = mpCPUSRVScalar[1] = NULL;
-		mpCPUSRVSSE[0]	  = mpCPUSRVSSE[1]    = NULL;
-		mpCPUSRVAVX[0]    = mpCPUSRVAVX[1]    = NULL;
-		mpCPUSRV[0]		  = mpCPUSRV[1]       = NULL;
-
-		for(UINT i = 0; i < OCCLUDER_SETS; i++)
-		{
-			mpAssetSetDBR[i] = NULL;
-		}
-
-		for(UINT i = 0; i < OCCLUDEE_SETS; i++)
-		{
-			mpAssetSetAABB[i] = NULL;
-		}
-
-		mpAssetSetSky = NULL;
-		mpCPUDepthBuf[0] = mpCPUDepthBuf[1] = NULL;
-		mpShowDepthBufMtrlScalar = mpShowDepthBufMtrlSSE = mpShowDepthBufMtrlAVX = mpShowDepthBufMtrl = NULL;
-
-		if((mSOCType == SCALAR_TYPE) && !mEnableTasks)
-		{
-			mpDBRScalarST = new DepthBufferRasterizerScalarST;
-			mpDBR = mpDBRScalarST;
-
-			mpAABBScalarST = new AABBoxRasterizerScalarST;
-			mpAABB = mpAABBScalarST;
-		}
-		else if((mSOCType == SCALAR_TYPE) && mEnableTasks)
-		{
-			mpDBRScalarMT = new DepthBufferRasterizerScalarMT;
-			mpDBR = mpDBRScalarMT;
-
-			mpAABBScalarMT = new AABBoxRasterizerScalarMT;
-			mpAABB = mpAABBScalarMT;
-		}
-		else if((mSOCType == SSE_TYPE) && !mEnableTasks)
-		{
-			mpDBRSSEST = new DepthBufferRasterizerSSEST;
-			mpDBR = mpDBRSSEST;
-
-			mpAABBSSEST = new AABBoxRasterizerSSEST;
-			mpAABB = mpAABBSSEST;
-		}
-		else if((mSOCType == SSE_TYPE) && mEnableTasks)
-		{
-			mpDBRSSEMT = new DepthBufferRasterizerSSEMT;
-			mpDBR = mpDBRSSEMT;
-
-			mpAABBSSEMT = new AABBoxRasterizerSSEMT;
-			mpAABB = mpAABBSSEMT;
-		}
-		else if ((mSOCType == AVX_TYPE) && !mEnableTasks)
-		{
-			mpDBRAVXST = new DepthBufferRasterizerAVXST;
-			mpDBR = mpDBRAVXST;
-
-			mpAABBAVXST = new AABBoxRasterizerAVXST;
-			mpAABB = mpAABBAVXST;
-		}
-		else if ((mSOCType == AVX_TYPE) && mEnableTasks)
-		{
-			mpDBRAVXMT = new DepthBufferRasterizerAVXMT;
-			mpDBR = mpDBRAVXMT;
-
-			mpAABBAVXMT = new AABBoxRasterizerAVXMT;
-			mpAABB = mpAABBAVXMT;
-		}
-
-	}
-    virtual ~MySample()
-    {
-        // Note: these two are defined in the base.  We release them because we addref them.
-        SAFE_RELEASE(mpCamera);
-        SAFE_RELEASE(mpShadowCamera);
-
-		_aligned_free(mpCPUDepthBuf[0]);
-		_aligned_free(mpCPUDepthBuf[1]);
-		_aligned_free(mpGPUDepthBuf);
-		SAFE_RELEASE(mpCPURenderTargetScalar[0]);
-		SAFE_RELEASE(mpCPURenderTargetScalar[1]);
-		SAFE_RELEASE(mpCPURenderTargetSSE[0]);
-		SAFE_RELEASE(mpCPURenderTargetSSE[1]);
-		SAFE_RELEASE(mpCPURenderTargetAVX[0]);
-		SAFE_RELEASE(mpCPURenderTargetAVX[1]);
-
-		SAFE_RELEASE(mpCPUSRVScalar[0]);
-		SAFE_RELEASE(mpCPUSRVScalar[1]);
-		SAFE_RELEASE(mpCPUSRVSSE[0]);
-		SAFE_RELEASE(mpCPUSRVSSE[1]);
-		SAFE_RELEASE(mpCPUSRVAVX[0]);
-		SAFE_RELEASE(mpCPUSRVAVX[1]);
-		
-		SAFE_DELETE(mpDBR);
-		SAFE_DELETE(mpAABB);
-
-		for(UINT i = 0; i < OCCLUDER_SETS; i++)
-		{
-			SAFE_RELEASE(mpAssetSetDBR[i]);
-		}
-		SAFE_RELEASE(mpAssetSetAABB[0]);
-		SAFE_RELEASE(mpAssetSetAABB[1]);
-		SAFE_RELEASE(mpAssetSetSky); 
-
-        SAFE_DELETE( mpCameraController );
-        SAFE_DELETE( mpDebugSprite);
-        SAFE_RELEASE(mpShadowCameraSet);
-        SAFE_DELETE( mpShadowRenderTarget );
-
-		SAFE_RELEASE( mpShowDepthBufMtrlScalar);
-		SAFE_RELEASE( mpShowDepthBufMtrlSSE);
-		SAFE_RELEASE( mpShowDepthBufMtrlAVX);
-
-        CPUTModel::ReleaseStaticResources();
-    }
+	MySample();
+	virtual ~MySample();
 
 	UINT			*mpCPURenderTargetPixels;
 
@@ -368,6 +191,7 @@ public:
     virtual void Update(double deltaSeconds);
     virtual void ResizeWindow(UINT width, UINT height);
 	virtual void TaskCleanUp();
+	virtual void UpdateGPUDepthBuf(MaskedOcclusionCulling *moc);
 	virtual void UpdateGPUDepthBuf(UINT idx);
 
 	// define some controls1

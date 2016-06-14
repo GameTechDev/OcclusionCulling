@@ -23,6 +23,7 @@
 #include "HelperSSE.h"
 
 struct BinTriangle;
+class MaskedOcclusionCulling;
 
 class TransformedMeshSSE : public HelperSSE
 {
@@ -52,6 +53,8 @@ class TransformedMeshSSE : public HelperSSE
 									   BinTriangle* pBin,
 									   USHORT* pNumTrisInBin,
 									   UINT idx);
+
+		void TransformAndRasterizeTrianglesST(__m128 *cumulativeMatrix, MaskedOcclusionCulling *moc, UINT idx);
 
 		inline UINT GetNumTriangles() {return mNumTriangles;}
 		inline UINT GetNumVertices() {return mNumVertices;}

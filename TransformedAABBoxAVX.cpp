@@ -16,6 +16,7 @@
 //--------------------------------------------------------------------------------------
 
 #include "TransformedAABBoxAVX.h"
+#include "MaskedOcclusionCulling\MaskedOcclusionCulling.h"
 
 static const UINT sBBIndexList[AABB_INDICES] =
 {
@@ -156,6 +157,66 @@ inline __m128 operator*(const __m128& v1, const __m128& v2) {
 
 inline __m128 operator/(const __m128& v1, const __m128& v2) {
 	return _mm_div_ps(v1, v2);
+}
+
+//----------------------------------------------------------------
+// Transforms the AABB vertices to screen space once every frame
+// Also performs a coarse depth pre-test
+//----------------------------------------------------------------
+PreTestResult TransformedAABBoxAVX::TransformAndPreTestAABBox(__m128 xformedPos[], const __m128 cumulativeMatrix[4], MaskedOcclusionCulling *moc)
+{
+	// w ends up being garbage, but it doesn't matter - we ignore it anyway.
+	__m128 vCenter = _mm_loadu_ps(&mBBCenter.x);
+	__m128 vHalf = _mm_loadu_ps(&mBBHalf.x);
+
+	__m128 vMin = _mm_sub_ps(vCenter, vHalf);
+	__m128 vMax = _mm_add_ps(vCenter, vHalf);
+
+	// transforms
+	__m128 xRow[2], yRow[2], zRow[2];
+	xRow[0] = _mm_shuffle_ps(vMin, vMin, 0x00) * cumulativeMatrix[0];
+	xRow[1] = _mm_shuffle_ps(vMax, vMax, 0x00) * cumulativeMatrix[0];
+	yRow[0] = _mm_shuffle_ps(vMin, vMin, 0x55) * cumulativeMatrix[1];
+	yRow[1] = _mm_shuffle_ps(vMax, vMax, 0x55) * cumulativeMatrix[1];
+	zRow[0] = _mm_shuffle_ps(vMin, vMin, 0xaa) * cumulativeMatrix[2];
+	zRow[1] = _mm_shuffle_ps(vMax, vMax, 0xaa) * cumulativeMatrix[2];
+
+	__m128 zAllIn = _mm_castsi128_ps(_mm_set1_epi32(~0));
+	__m128 screenMin = _mm_set1_ps(FLT_MAX);
+	__m128 screenMax = _mm_set1_ps(-FLT_MAX);
+
+	// Find the minimum of each component
+	__m128 minvert = _mm_add_ps(cumulativeMatrix[3], _mm_add_ps(_mm_add_ps(_mm_min_ps(xRow[0], xRow[1]), _mm_min_ps(yRow[0], yRow[1])), _mm_min_ps(zRow[0], zRow[1])));
+	float minW = minvert.m128_f32[3];
+	if (minW < 0.00000001f)
+		return ePT_VISIBLE;
+
+	for (UINT i = 0; i < AABB_VERTICES; i++)
+	{
+		// Transform the vertex
+		__m128 vert = cumulativeMatrix[3];
+		vert += xRow[sBBxInd[i]];
+		vert += yRow[sBByInd[i]];
+		vert += zRow[sBBzInd[i]];
+
+		// We have inverted z; z is in front of near plane iff z <= w.
+		__m128 vertZ = _mm_shuffle_ps(vert, vert, 0xaa); // vert.zzzz
+		__m128 vertW = _mm_shuffle_ps(vert, vert, 0xff); // vert.wwww
+
+		// project
+		xformedPos[i] = _mm_div_ps(vert, vertW);
+
+		// update bounds
+		screenMin = _mm_min_ps(screenMin, xformedPos[i]);
+		screenMax = _mm_max_ps(screenMax, xformedPos[i]);
+	}
+
+	MaskedOcclusionCulling::CullingResult res = moc->TestRect(screenMin.m128_f32[0], screenMin.m128_f32[1], screenMax.m128_f32[0], screenMax.m128_f32[1], minW);
+
+
+	if (res == MaskedOcclusionCulling::VISIBLE)
+		return ePT_UNSURE;
+	return ePT_INVISIBLE;
 }
 
 //----------------------------------------------------------------
@@ -446,4 +507,19 @@ bool TransformedAABBoxAVX::RasterizeAndDepthTestAABBox(UINT *pRenderTargetPixels
 	}// for each set of SIMD# triangles
 
 	return false;
+}
+
+//-----------------------------------------------------------------------------------------
+// Rasterize the occludee AABB and depth test it against the CPU rasterized depth buffer
+// If any of the rasterized AABB pixels passes the depth test exit early and mark the occludee
+// as visible. If all rasterized AABB pixels are occluded then the occludee is culled
+//-----------------------------------------------------------------------------------------
+bool TransformedAABBoxAVX::RasterizeAndDepthTestAABBox(MaskedOcclusionCulling *moc, const __m128 pXformedPos[])
+{
+	MaskedOcclusionCulling::CullingResult res;
+	res = moc->TestTriangles((float*)pXformedPos, sBBIndexList, 12, MaskedOcclusionCulling::CLIP_PLANE_ALL, nullptr, MaskedOcclusionCulling::VertexLayout(sizeof(__m128), 4, 12));
+	if (res != MaskedOcclusionCulling::VISIBLE)
+		return false;
+	else
+		return true;
 }

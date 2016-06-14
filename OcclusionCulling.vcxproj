@@ -119,6 +119,7 @@
       <AdditionalOptions>
       </AdditionalOptions>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <CallingConvention>Cdecl</CallingConvention>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -165,6 +166,7 @@
       <AdditionalOptions>
       </AdditionalOptions>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <CallingConvention>Cdecl</CallingConvention>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -176,6 +178,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AABBoxMaskedRasterizerAVXST.h" />
     <ClInclude Include="AABBoxRasterizer.h" />
     <ClInclude Include="AABBoxRasterizerAVX.h" />
     <ClInclude Include="AABBoxRasterizerAVXMT.h" />
@@ -187,6 +190,7 @@
     <ClInclude Include="AABBoxRasterizerSSEMT.h" />
     <ClInclude Include="AABBoxRasterizerSSEST.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="DepthBufferMaskedRasterizerAVXST.h" />
     <ClInclude Include="DepthBufferRasterizer.h" />
     <ClInclude Include="DepthBufferRasterizerAVX.h" />
     <ClInclude Include="DepthBufferRasterizerAVXMT.h" />
@@ -201,6 +205,7 @@
     <ClInclude Include="HelperMT.h" />
     <ClInclude Include="HelperScalar.h" />
     <ClInclude Include="HelperSSE.h" />
+    <ClInclude Include="MaskedOcclusionCulling\MaskedOcclusionCulling.h" />
     <ClInclude Include="OcclusionCulling.h" />
     <ClInclude Include="TransformedAABBoxAVX.h" />
     <ClInclude Include="TransformedAABBoxScalar.h" />
@@ -211,6 +216,7 @@
     <ClInclude Include="TransformedModelSSE.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AABBoxMaskedRasterizerAVXST.cpp" />
     <ClCompile Include="AABBoxRasterizer.cpp" />
     <ClCompile Include="AABBoxRasterizerAVX.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
@@ -246,6 +252,11 @@
     <ClCompile Include="AABBoxRasterizerSSE.cpp" />
     <ClCompile Include="AABBoxRasterizerSSEMT.cpp" />
     <ClCompile Include="AABBoxRasterizerSSEST.cpp" />
+    <ClCompile Include="DepthBufferMaskedRasterizerAVXST.cpp">
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Speed</FavorSizeOrSpeed>
+    </ClCompile>
     <ClCompile Include="DepthBufferRasterizer.cpp" />
     <ClCompile Include="DepthBufferRasterizerAVX.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
@@ -275,6 +286,12 @@
     <ClCompile Include="HelperScalar.cpp" />
     <ClCompile Include="HelperSSE.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MaskedOcclusionCulling\MaskedOcclusionCulling.cpp">
+      <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Speed</FavorSizeOrSpeed>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <CallingConvention Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Cdecl</CallingConvention>
+    </ClCompile>
     <ClCompile Include="OcclusionCulling.cpp" />
     <ClCompile Include="TransformedAABBoxAVX.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>

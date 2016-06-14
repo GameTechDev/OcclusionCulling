@@ -31,13 +31,17 @@
 //	ePT_UNSURE,
 //};
 
+class MaskedOcclusionCulling;
+
 class TransformedAABBoxAVX : public HelperAVX
 {
 	public:
 		void CreateAABBVertexIndexList(CPUTModelDX11 *pModel);
 		bool IsInsideViewFrustum(CPUTCamera *pCamera);
 		PreTestResult TransformAndPreTestAABBox(__m128 xformedPos[], const __m128 cumulativeMatrix[4], const float *pDepthSummary);
+		PreTestResult TransformAndPreTestAABBox(__m128 xformedPos[], const __m128 cumulativeMatrix[4], MaskedOcclusionCulling *moc);
 		bool RasterizeAndDepthTestAABBox(UINT *pRenderTargetPixels, const __m128 pXformedPos[], UINT idx);
+		bool RasterizeAndDepthTestAABBox(MaskedOcclusionCulling *moc, const __m128 pXformedPos[]);
 
 		bool IsTooSmall(const BoxTestSetupSSE &setup, __m128 cumulativeMatrix[4]);
 		

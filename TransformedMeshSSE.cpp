@@ -17,6 +17,7 @@
 
 #include "TransformedMeshSSE.h"
 #include "DepthBufferRasterizerSSE.h"
+#include "MaskedOcclusionCulling\MaskedOcclusionCulling.h"
 
 TransformedMeshSSE::TransformedMeshSSE()
 	: mNumVertices(0),
@@ -379,4 +380,11 @@ void TransformedMeshSSE::BinTransformedTrianglesMT(UINT taskId,
 			}
 		}
 	}
+}
+
+void TransformedMeshSSE::TransformAndRasterizeTrianglesST(__m128 *cumulativeMatrix, MaskedOcclusionCulling *moc, UINT idx)
+{
+	memset(mpXformedPos[idx], 0, sizeof(__m128)*GetNumVertices());
+	MaskedOcclusionCulling::TransformVertices((float*)cumulativeMatrix, (float*)mpVertices, (float*)mpXformedPos[idx], GetNumVertices());
+	moc->RenderTriangles((float*)mpXformedPos[idx], mpIndices, GetNumTriangles(), MaskedOcclusionCulling::CLIP_PLANE_ALL, nullptr);
 }

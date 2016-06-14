@@ -16,6 +16,7 @@
 #include "OcclusionCulling.h"
 #include "CPUTRenderTarget.h"
 #include "CPUTTextureDX11.h"
+#include "MaskedOcclusionCulling\MaskedOcclusionCulling.h"
 
 const UINT SHADOW_WIDTH_HEIGHT = 256;
 
@@ -28,6 +29,8 @@ extern float3 gLightDir;
 extern char *gpDefaultShaderSource;
 
 float gFarClipDistance = 2000.0f;
+
+MaskedOcclusionCulling *gMaskedOcclusionCulling = nullptr;
 
 SOC_TYPE gSOCType = SSE_TYPE;
 float gOccluderSizeThreshold = 1.5f;
@@ -44,11 +47,217 @@ TASKSETHANDLE gAABBoxDepthTest[2]   = {TASKSETHANDLE_INVALID, TASKSETHANDLE_INVA
 
 LARGE_INTEGER glFrequency; 
 
+
+MySample::MySample() :
+	mpCameraController(NULL),
+	mpDebugSprite(NULL),
+	mpShadowCameraSet(NULL),
+	mpShadowRenderTarget(NULL),
+	mpFPSCounter(NULL),
+	mpTypeDropDown(NULL),
+	mpOccludersText(NULL),
+	mpNumOccludersText(NULL),
+	mpOccludersR2DBText(NULL),
+	mpOccluderTrisText(NULL),
+	mpOccluderRasterizedTrisText(NULL),
+	mpRasterizeTimeText(NULL),
+	mpOccluderSizeSlider(NULL),
+	mpOccludeesText(NULL),
+	mpNumOccludeesText(NULL),
+	mpCulledText(NULL),
+	mpVisibleText(NULL),
+	mpOccludeeTrisText(NULL),
+	mpCulledTrisText(NULL),
+	mpVisibleTrisText(NULL),
+	mpDepthTestTimeText(NULL),
+	mpOccludeeSizeSlider(NULL),
+	mpTotalCullTimeText(NULL),
+	mpCullingCheckBox(NULL),
+	mpFCullingCheckBox(NULL),
+	mpDBCheckBox(NULL),
+	mpBBCheckBox(NULL),
+	mpTasksCheckBox(NULL),
+	mpVsyncCheckBox(NULL),
+	mpPipelineCheckBox(NULL),
+	mpDrawCallsText(NULL),
+	mpDepthTestTaskSlider(NULL),
+	mpGPUDepthBuf(NULL),
+	mSOCType(gSOCType),
+	mNumOccluders(0),
+	mNumOccludersR2DB(0),
+	mNumOccluderTris(0),
+	mNumOccluderRasterizedTris(0),
+	mRasterizeTime(0.0),
+	mOccluderSizeThreshold(gOccluderSizeThreshold),
+	mNumCulled(0),
+	mNumVisible(0),
+	mNumOccludeeTris(0),
+	mNumOccludeeCulledTris(0),
+	mNumOccludeeVisibleTris(0),
+	mDepthTestTime(0.0),
+	mOccludeeSizeThreshold(gOccludeeSizeThreshold),
+	mTotalCullTime(0.0),
+	mEnableCulling(true),
+	mEnableFCulling(true),
+	mViewDepthBuffer(false),
+	mViewBoundingBox(false),
+	mEnableTasks(true),
+	mPipeline(false),
+	mNumDrawCalls(0),
+	mNumDepthTestTasks(gDepthTestTasks),
+	mCurrIdx(0),
+	mPrevIdx(1),
+	mFirstFrame(true)
+{
+	mpCPURenderTargetScalar[0] = NULL;
+	mpCPURenderTargetScalar[1] = NULL;
+
+	mpCPURenderTargetSSE[0] = NULL;
+	mpCPURenderTargetSSE[1] = NULL;
+
+	mpCPURenderTargetAVX[0] = NULL;
+	mpCPURenderTargetAVX[1] = NULL;
+
+	mpCPURenderTarget[0] = NULL;
+	mpCPURenderTarget[1] = NULL;
+
+	mpCPUSRVScalar[0] = mpCPUSRVScalar[1] = NULL;
+	mpCPUSRVSSE[0] = mpCPUSRVSSE[1] = NULL;
+	mpCPUSRVAVX[0] = mpCPUSRVAVX[1] = NULL;
+	mpCPUSRV[0] = mpCPUSRV[1] = NULL;
+
+	for (UINT i = 0; i < OCCLUDER_SETS; i++)
+	{
+		mpAssetSetDBR[i] = NULL;
+	}
+
+	for (UINT i = 0; i < OCCLUDEE_SETS; i++)
+	{
+		mpAssetSetAABB[i] = NULL;
+	}
+
+	mpAssetSetSky = NULL;
+	mpCPUDepthBuf[0] = mpCPUDepthBuf[1] = NULL;
+	mpShowDepthBufMtrlScalar = mpShowDepthBufMtrlSSE = mpShowDepthBufMtrlAVX = mpShowDepthBufMtrl = NULL;
+}
+
+MySample::~MySample()
+{
+	// Note: these two are defined in the base.  We release them because we addref them.
+	SAFE_RELEASE(mpCamera);
+	SAFE_RELEASE(mpShadowCamera);
+
+	_aligned_free(mpCPUDepthBuf[0]);
+	_aligned_free(mpCPUDepthBuf[1]);
+	_aligned_free(mpGPUDepthBuf);
+	SAFE_RELEASE(mpCPURenderTargetScalar[0]);
+	SAFE_RELEASE(mpCPURenderTargetScalar[1]);
+	SAFE_RELEASE(mpCPURenderTargetSSE[0]);
+	SAFE_RELEASE(mpCPURenderTargetSSE[1]);
+	SAFE_RELEASE(mpCPURenderTargetAVX[0]);
+	SAFE_RELEASE(mpCPURenderTargetAVX[1]);
+
+	SAFE_RELEASE(mpCPUSRVScalar[0]);
+	SAFE_RELEASE(mpCPUSRVScalar[1]);
+	SAFE_RELEASE(mpCPUSRVSSE[0]);
+	SAFE_RELEASE(mpCPUSRVSSE[1]);
+	SAFE_RELEASE(mpCPUSRVAVX[0]);
+	SAFE_RELEASE(mpCPUSRVAVX[1]);
+
+	SAFE_DELETE(mpDBR);
+	SAFE_DELETE(mpAABB);
+
+	for (UINT i = 0; i < OCCLUDER_SETS; i++)
+	{
+		SAFE_RELEASE(mpAssetSetDBR[i]);
+	}
+	SAFE_RELEASE(mpAssetSetAABB[0]);
+	SAFE_RELEASE(mpAssetSetAABB[1]);
+	SAFE_RELEASE(mpAssetSetSky);
+
+	SAFE_DELETE(mpCameraController);
+	SAFE_DELETE(mpDebugSprite);
+	SAFE_RELEASE(mpShadowCameraSet);
+	SAFE_DELETE(mpShadowRenderTarget);
+
+	SAFE_RELEASE(mpShowDepthBufMtrlScalar);
+	SAFE_RELEASE(mpShowDepthBufMtrlSSE);
+	SAFE_RELEASE(mpShowDepthBufMtrlAVX);
+
+	CPUTModel::ReleaseStaticResources();
+}
+
+void MySample::SetupOcclusionCullingObjects()
+{
+	if ((mSOCType == SCALAR_TYPE) && !mEnableTasks)
+	{
+		mpDBRScalarST = new DepthBufferRasterizerScalarST;
+		mpDBR = mpDBRScalarST;
+
+		mpAABBScalarST = new AABBoxRasterizerScalarST;
+		mpAABB = mpAABBScalarST;
+	}
+	else if ((mSOCType == SCALAR_TYPE) && mEnableTasks)
+	{
+		mpDBRScalarMT = new DepthBufferRasterizerScalarMT;
+		mpDBR = mpDBRScalarMT;
+
+		mpAABBScalarMT = new AABBoxRasterizerScalarMT;
+		mpAABB = mpAABBScalarMT;
+	}
+	else if ((mSOCType == SSE_TYPE) && !mEnableTasks)
+	{
+		mpDBRSSEST = new DepthBufferRasterizerSSEST;
+		mpDBR = mpDBRSSEST;
+
+		mpAABBSSEST = new AABBoxRasterizerSSEST;
+		mpAABB = mpAABBSSEST;
+	}
+	else if ((mSOCType == SSE_TYPE) && mEnableTasks)
+	{
+		mpDBRSSEMT = new DepthBufferRasterizerSSEMT;
+		mpDBR = mpDBRSSEMT;
+
+		mpAABBSSEMT = new AABBoxRasterizerSSEMT;
+		mpAABB = mpAABBSSEMT;
+	}
+	else if ((mSOCType == AVX_TYPE) && !mEnableTasks)
+	{
+		mpDBRAVXST = new DepthBufferRasterizerAVXST;
+		mpDBR = mpDBRAVXST;
+
+		mpAABBAVXST = new AABBoxRasterizerAVXST;
+		mpAABB = mpAABBAVXST;
+	}
+	else if ((mSOCType == AVX_TYPE) && mEnableTasks)
+	{
+		mpDBRAVXMT = new DepthBufferRasterizerAVXMT;
+		mpDBR = mpDBRAVXMT;
+
+		mpAABBAVXMT = new AABBoxRasterizerAVXMT;
+		mpAABB = mpAABBAVXMT;
+	}
+	else if (mSOCType == MASK_AVX_TYPE)
+	{
+		mpDBMRAVXST = new DepthBufferMaskedRasterizerAVXST(gMaskedOcclusionCulling);
+		mpDBR = mpDBMRAVXST;
+
+		mpAABBMAVXST = new AABBoxMaskedRasterizerAVXST(gMaskedOcclusionCulling);
+		mpAABB = mpAABBMAVXST;
+	}
+}
+
+
 // Handle OnCreation events
 //-----------------------------------------------------------------------------
 void MySample::Create()
 {    
-    CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
+	// Create occlusion culling resources
+	gMaskedOcclusionCulling = new MaskedOcclusionCulling();
+	gMaskedOcclusionCulling->SetResolution(SCREENW, SCREENH);
+	SetupOcclusionCullingObjects();
+	
+	CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
 
     gLightDir.normalize();
 
@@ -63,8 +272,11 @@ void MySample::Create()
 	pGUI->CreateDropdown( L"Rasterizer Technique: SCALAR", ID_RASTERIZE_TYPE, ID_MAIN_PANEL, &mpTypeDropDown);
     mpTypeDropDown->AddSelectionItem( L"Rasterizer Technique: SSE" );
 	if (CanUseIntelCore4thGenFeatures())
-		mpTypeDropDown->AddSelectionItem( L"Rasterizer Technique: AVX" );
-   	mpTypeDropDown->SetSelectedItem(mSOCType + 1);
+	{
+		mpTypeDropDown->AddSelectionItem(L"Rasterizer Technique: AVX");
+		mpTypeDropDown->AddSelectionItem(L"Rasterizer Technique: Mask AVX");
+	}
+	mpTypeDropDown->SetSelectedItem(mSOCType + 1);
    
 	wchar_t string[CPUT_MAX_STRING_LENGTH];
     pGUI->CreateText(    _L("Occluders                                              \t"), ID_OCCLUDERS, ID_MAIN_PANEL, &mpOccludersText);
@@ -161,9 +373,9 @@ void MySample::Create()
 
 	// Creating a render target to view the CPU rasterized depth buffer
 	// Pad the buffer to 32 byte to support AVX2 data read/write
-	mpCPUDepthBuf[0] = (char*)_aligned_malloc(sizeof(char) * ((SCREENW*SCREENH * 4 + 31) & 0xFFFFFFE0), 16);
-	mpCPUDepthBuf[1] = (char*)_aligned_malloc(sizeof(char) * ((SCREENW*SCREENH * 4 + 31) & 0xFFFFFFE0), 16);
-	mpGPUDepthBuf = (char*)_aligned_malloc(sizeof(char) * ((SCREENW*SCREENH * 4 + 31) & 0xFFFFFFE0), 16);
+	mpCPUDepthBuf[0] = (char*)_aligned_malloc(sizeof(char) * ((SCREENW*SCREENH * 4 + 31) & 0xFFFFFFE0), 32);
+	mpCPUDepthBuf[1] = (char*)_aligned_malloc(sizeof(char) * ((SCREENW*SCREENH * 4 + 31) & 0xFFFFFFE0), 32);
+	mpGPUDepthBuf = (char*)_aligned_malloc(sizeof(char) * ((SCREENW*SCREENH * 4 + 31) & 0xFFFFFFE0), 32);
 
 	CD3D11_TEXTURE2D_DESC cpuRenderTargetDescSSE
 	(
@@ -281,9 +493,9 @@ void MySample::Create()
     SAFE_RELEASE(pVSNoTex);
 
     // load shadow casting material+sprite object
-    cString ExecutableDirectory;
-    CPUTOSServices::GetOSServices()->GetExecutableDirectory(&ExecutableDirectory);
-    pAssetLibrary->SetMediaDirectoryName(  ExecutableDirectory+_L("..\\..\\Media\\"));
+	cString ExecutableDirectory;
+	CPUTOSServices::GetOSServices()->GetWorkingDirectory(&ExecutableDirectory);
+	pAssetLibrary->SetMediaDirectoryName(ExecutableDirectory + _L("\\Media\\"));
 
     mpShadowRenderTarget = new CPUTRenderTargetDepth();
     mpShadowRenderTarget->CreateRenderTarget( cString(_L("$shadow_depth")), SHADOW_WIDTH_HEIGHT, SHADOW_WIDTH_HEIGHT, DXGI_FORMAT_D32_FLOAT );
@@ -326,6 +538,15 @@ void MySample::Create()
 		mpShowDepthBufMtrl = mpShowDepthBufMtrlAVX;
 		rowPitch = 2 * SCREENW * 4;
 	}
+	else if (mSOCType == MASK_AVX_TYPE)
+	{
+		mpCPURenderTarget[0] = mpCPURenderTargetAVX[0];
+		mpCPURenderTarget[1] = mpCPURenderTargetAVX[1];
+		mpCPUSRV[0] = mpCPUSRVAVX[0];
+		mpCPUSRV[1] = mpCPUSRVAVX[1];
+		mpShowDepthBufMtrl = mpShowDepthBufMtrlScalar;
+		rowPitch = SCREENW * 4;
+	}
 
     // Call ResizeWindow() because it creates some resources that our blur material needs (e.g., the back buffer)
     ResizeWindow(width, height);
@@ -345,7 +566,7 @@ void MySample::Create()
     //
     // Load .set files to load the castle scene
 	//
-    pAssetLibrary->SetMediaDirectoryName(_L("..\\..\\Media\\Castle\\"));
+	pAssetLibrary->SetMediaDirectoryName(_L("Media\\Castle\\"));
 
 #ifdef DEBUG
     mpAssetSetDBR[0] = pAssetLibrary->GetAssetSet(_L("castleLargeOccluders"));
@@ -676,31 +897,8 @@ CPUTEventHandledCode MySample::HandleKeyboardEvent(CPUTKey key)
 				wchar_t string[CPUT_MAX_STRING_LENGTH];
 				swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("Depth Test Task: \t%d"), mNumDepthTestTasks);
 				mpDepthTestTaskSlider->SetText(string);
-			
-				if(mSOCType == SCALAR_TYPE)
-				{
-					mpDBRScalarMT = new DepthBufferRasterizerScalarMT;
-					mpDBR = mpDBRScalarMT;
 
-					mpAABBScalarMT = new AABBoxRasterizerScalarMT;
-					mpAABB = mpAABBScalarMT;
-				}
-				else if(mSOCType == SSE_TYPE)
-				{
-					mpDBRSSEMT = new DepthBufferRasterizerSSEMT;
-					mpDBR = mpDBRSSEMT;
-					
-					mpAABBSSEMT = new AABBoxRasterizerSSEMT;
-					mpAABB = mpAABBSSEMT;
-				}
-				else if (mSOCType == AVX_TYPE)
-				{
-					mpDBRAVXMT = new DepthBufferRasterizerAVXMT;
-					mpDBR = mpDBRAVXMT;
-
-					mpAABBAVXMT = new AABBoxRasterizerAVXMT;
-					mpAABB = mpAABBAVXMT;
-				}
+				SetupOcclusionCullingObjects();
 				mpAABB->SetDepthTestTasks(mNumDepthTestTasks);
 			}
 			else
@@ -708,30 +906,8 @@ CPUTEventHandledCode MySample::HandleKeyboardEvent(CPUTKey key)
 				state = CPUT_CHECKBOX_UNCHECKED;
 				mpPipelineCheckBox->SetVisibility(false);
 				mpDepthTestTaskSlider->SetVisibility(false);
-				if(mSOCType == SCALAR_TYPE)
-				{
-					mpDBRScalarST = new DepthBufferRasterizerScalarST;
-					mpDBR = mpDBRScalarST;
-	
-					mpAABBScalarST = new AABBoxRasterizerScalarST;
-					mpAABB = mpAABBScalarST;
-				}
-				else if(mSOCType == SSE_TYPE)
-				{
-					mpDBRSSEST = new DepthBufferRasterizerSSEST;
-					mpDBR = mpDBRSSEST;
-					
-					mpAABBSSEST = new AABBoxRasterizerSSEST;
-					mpAABB = mpAABBSSEST;
-				}
-				else if (mSOCType == AVX_TYPE)
-				{
-					mpDBRAVXST = new DepthBufferRasterizerAVXST;
-					mpDBR = mpDBRAVXST;
 
-					mpAABBAVXST = new AABBoxRasterizerAVXST;
-					mpAABB = mpAABBAVXST;
-				}
+				SetupOcclusionCullingObjects();
 			}
 			mpDBR->CreateTransformedModels(mpAssetSetDBR, OCCLUDER_SETS);		
 			mpDBR->SetOccluderSizeThreshold(mOccluderSizeThreshold);
@@ -854,25 +1030,17 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 		UINT selectedItem;
         mpTypeDropDown->GetSelectedItem(selectedItem);
 
+		mpTasksCheckBox->SetVisibility(true);
+		if (mEnableTasks)
+		{
+			mpPipelineCheckBox->SetVisibility(false);
+			mpDepthTestTaskSlider->SetVisibility(false);
+		}
+
 		if(selectedItem - 1 == 0)
 		{
 			mSOCType = SCALAR_TYPE;
-			if(!mEnableTasks)
-			{
-				mpDBRScalarST = new DepthBufferRasterizerScalarST;
-				mpDBR = mpDBRScalarST;
-
-				mpAABBScalarST = new AABBoxRasterizerScalarST;
-				mpAABB = mpAABBScalarST;
-			}
-			else
-			{
-				mpDBRScalarMT = new DepthBufferRasterizerScalarMT;
-				mpDBR = mpDBRScalarMT;
-
-				mpAABBScalarMT = new AABBoxRasterizerScalarMT;
-				mpAABB = mpAABBScalarMT;
-			}
+			SetupOcclusionCullingObjects();
 
 			mpCPURenderTarget[0] = mpCPURenderTargetScalar[0];
 			mpCPURenderTarget[1] = mpCPURenderTargetScalar[1];
@@ -884,22 +1052,7 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 		else if(selectedItem - 2 == 0)
 		{
 			mSOCType = SSE_TYPE;
-			if(!mEnableTasks)
-			{
-				mpDBRSSEST = new DepthBufferRasterizerSSEST;
-				mpDBR = mpDBRSSEST;
-
-				mpAABBSSEST = new AABBoxRasterizerSSEST;
-				mpAABB = mpAABBSSEST;
-			}
-			else
-			{
-				mpDBRSSEMT = new DepthBufferRasterizerSSEMT;
-				mpDBR = mpDBRSSEMT;
-
-				mpAABBSSEMT = new AABBoxRasterizerSSEMT;
-				mpAABB = mpAABBSSEMT;
-			}
+			SetupOcclusionCullingObjects();
 
 			mpCPURenderTarget[0] = mpCPURenderTargetSSE[0];
 			mpCPURenderTarget[1] = mpCPURenderTargetSSE[1];
@@ -911,22 +1064,7 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 		else if (selectedItem - 3 == 0)
 		{
 			mSOCType = AVX_TYPE;
-			if (!mEnableTasks)
-			{
-				mpDBRAVXST = new DepthBufferRasterizerAVXST;
-				mpDBR = mpDBRAVXST;
-
-				mpAABBAVXST = new AABBoxRasterizerAVXST;
-				mpAABB = mpAABBAVXST;
-			}
-			else
-			{
-				mpDBRAVXMT = new DepthBufferRasterizerAVXMT;
-				mpDBR = mpDBRAVXMT;
-
-				mpAABBAVXMT = new AABBoxRasterizerAVXMT;
-				mpAABB = mpAABBAVXMT;
-			}
+			SetupOcclusionCullingObjects();
 
 			mpCPURenderTarget[0] = mpCPURenderTargetAVX[0];
 			mpCPURenderTarget[1] = mpCPURenderTargetAVX[1];
@@ -934,6 +1072,25 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 			mpCPUSRV[1] = mpCPUSRVAVX[1];
 			mpShowDepthBufMtrl = mpShowDepthBufMtrlAVX;
 			rowPitch = 2 * SCREENW * 4;
+		}
+		else if (selectedItem - 4 == 0)
+		{
+			mSOCType = MASK_AVX_TYPE;
+			SetupOcclusionCullingObjects();
+
+			mpCPURenderTarget[0] = mpCPURenderTargetScalar[0];
+			mpCPURenderTarget[1] = mpCPURenderTargetScalar[1];
+			mpCPUSRV[0] = mpCPUSRVScalar[0];
+			mpCPUSRV[1] = mpCPUSRVScalar[1];
+			mpShowDepthBufMtrl = mpShowDepthBufMtrlScalar;
+			rowPitch = SCREENW * 4;
+
+			// For mask algorithm, disable multi-threading (not implemented)
+			mEnableTasks = false;
+			mpPipelineCheckBox->SetVisibility(false);
+			mpDepthTestTaskSlider->SetVisibility(false);
+			mpTasksCheckBox->SetCheckboxState(CPUT_CHECKBOX_UNCHECKED);
+			mpTasksCheckBox->SetVisibility(false);
 		}
 		mpDBR->CreateTransformedModels(mpAssetSetDBR, OCCLUDER_SETS);		
 		mpDBR->SetOccluderSizeThreshold(mOccluderSizeThreshold);
@@ -993,30 +1150,7 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 			swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("Depth Test Task: \t%d"), mNumDepthTestTasks);
 			mpDepthTestTaskSlider->SetText(string);
 			
-			if(mSOCType == SCALAR_TYPE)
-			{
-				mpDBRScalarMT = new DepthBufferRasterizerScalarMT;
-				mpDBR = mpDBRScalarMT;
-
-				mpAABBScalarMT = new AABBoxRasterizerScalarMT;
-				mpAABB = mpAABBScalarMT;
-			}
-			else if(mSOCType == SSE_TYPE)
-			{
-				mpDBRSSEMT = new DepthBufferRasterizerSSEMT;
-				mpDBR = mpDBRSSEMT;
-
-				mpAABBSSEMT = new AABBoxRasterizerSSEMT;
-				mpAABB = mpAABBSSEMT;
-			}
-			else if (mSOCType == AVX_TYPE)
-			{
-				mpDBRAVXMT = new DepthBufferRasterizerAVXMT;
-				mpDBR = mpDBRAVXMT;
-
-				mpAABBAVXMT = new AABBoxRasterizerAVXMT;
-				mpAABB = mpAABBAVXMT;
-			}
+			SetupOcclusionCullingObjects();
 			mpAABB->SetDepthTestTasks(mNumDepthTestTasks);
 		}
 		else
@@ -1024,30 +1158,7 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 			mEnableTasks = false;
 			mpDepthTestTaskSlider->SetVisibility(false);
 			mpPipelineCheckBox->SetVisibility(false);
-			if(mSOCType == SCALAR_TYPE)
-			{
-				mpDBRScalarST = new DepthBufferRasterizerScalarST;
-				mpDBR = mpDBRScalarST;
-
-				mpAABBScalarST = new AABBoxRasterizerScalarST;
-				mpAABB = mpAABBScalarST;
-			}
-			else if(mSOCType == SSE_TYPE)
-			{
-				mpDBRSSEST = new DepthBufferRasterizerSSEST;
-				mpDBR = mpDBRSSEST;
-
-				mpAABBSSEST = new AABBoxRasterizerSSEST;
-				mpAABB = mpAABBSSEST;
-			}
-			else if (mSOCType == AVX_TYPE)
-			{
-				mpDBRAVXST = new DepthBufferRasterizerAVXST;
-				mpDBR = mpDBRAVXST;
-
-				mpAABBAVXST = new AABBoxRasterizerAVXST;
-				mpAABB = mpAABBAVXST;
-			}
+			SetupOcclusionCullingObjects();
 		}
 		mpDBR->CreateTransformedModels(mpAssetSetDBR, OCCLUDER_SETS);		
 		mpDBR->SetOccluderSizeThreshold(mOccluderSizeThreshold);
@@ -1236,6 +1347,34 @@ void MySample::UpdateGPUDepthBuf(UINT idx)
 	}
 }
 
+void MySample::UpdateGPUDepthBuf(MaskedOcclusionCulling *moc)
+{
+	float *pixels = new float[SCREENW*SCREENH];
+	moc->ComputePixelDepthBuffer(pixels);
+
+	float maxdepth = -1, mindepth = FLT_MAX;
+	for (int i = 0; i < SCREENW*SCREENH; ++i)
+	{
+		if (pixels[i] > 0.0f)
+		{
+			maxdepth = max(maxdepth, pixels[i]);
+			mindepth = min(mindepth, pixels[i]);
+		}
+	}
+
+	for (int i = 0; i < SCREENW*SCREENH; ++i)
+	{
+		unsigned char intensity = 0;
+		if (pixels[i] > 0.0f)
+			intensity = (unsigned char)(((pixels[i] - mindepth) / (maxdepth - mindepth))*192.0f + 63.0f);
+		mpGPUDepthBuf[i * 4 + 0] = intensity;
+		mpGPUDepthBuf[i * 4 + 1] = intensity;
+		mpGPUDepthBuf[i * 4 + 2] = intensity;
+		mpGPUDepthBuf[i * 4 + 3] = intensity;
+	}
+
+	delete[] pixels;
+}
 
 //#include "xnamath.h"
 //static ID3D11UnorderedAccessView *gpNullUAVs[CPUT_MATERIAL_MAX_TEXTURE_SLOTS] = {0};
@@ -1334,17 +1473,25 @@ void MySample::Render(double deltaSeconds)
 	if(mViewDepthBuffer)
 	{
 		mpShowDepthBufMtrl->SetRenderStates(renderParams);
-		if(mEnableCulling && mEnableTasks && mPipeline)
+		if (mSOCType == MASK_AVX_TYPE)
 		{
-			// Update the GPU-side depth buffer
-			UpdateGPUDepthBuf(mPrevIdx);
-		    mpContext->UpdateSubresource(mpCPURenderTarget[mPrevIdx], 0, NULL, mpGPUDepthBuf, rowPitch, 0);			
+			UpdateGPUDepthBuf(gMaskedOcclusionCulling);
+			mpContext->UpdateSubresource(mpCPURenderTarget[mCurrIdx], 0, NULL, mpGPUDepthBuf, rowPitch, 0);
 		}
-		else 
+		else
 		{
-			// Update the GPU-side depth buffer
-			UpdateGPUDepthBuf(mCurrIdx);
-			mpContext->UpdateSubresource(mpCPURenderTarget[mCurrIdx], 0, NULL, mpGPUDepthBuf, rowPitch, 0);			
+			if (mEnableCulling && mEnableTasks && mPipeline)
+			{
+				// Update the GPU-side depth buffer
+				UpdateGPUDepthBuf(mPrevIdx);
+				mpContext->UpdateSubresource(mpCPURenderTarget[mPrevIdx], 0, NULL, mpGPUDepthBuf, rowPitch, 0);
+			}
+			else
+			{
+				// Update the GPU-side depth buffer
+				UpdateGPUDepthBuf(mCurrIdx);
+				mpContext->UpdateSubresource(mpCPURenderTarget[mCurrIdx], 0, NULL, mpGPUDepthBuf, rowPitch, 0);
+			}
 		}
 		mpContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		mpContext->Draw(3, 0);

@@ -23,6 +23,7 @@
 #include "HelperSSE.h"
 
 struct BoxTestSetupSSE;
+class MaskedOcclusionCulling;
 
 class TransformedModelSSE : public HelperSSE
 {
@@ -56,6 +57,7 @@ class TransformedModelSSE : public HelperSSE
 									   BinTriangle* pBin,
 									   USHORT* pNumTrisInBin,
 									   UINT idx);
+		void TransformAndRasterizeTrianglesST(MaskedOcclusionCulling *moc, UINT idx);
 
 		inline UINT GetNumVertices(){return mNumVertices;}
 
@@ -85,6 +87,8 @@ class TransformedModelSSE : public HelperSSE
 			return (mInsideViewFrustum[idx] && !mTooSmall[idx]);
 		}
 
+		inline float GetDepth() { return mBBCenterW; }
+
 	private:
 		CPUTModelDX11 *mpCPUTModel;
 		UINT mNumMeshes;
@@ -101,7 +105,9 @@ class TransformedModelSSE : public HelperSSE
 		float3 mBBCenterOS;
 		float mRadiusSq;
 		TransformedMeshSSE *mpMeshes;
-		__m128 *mpXformedPos[2];		
+		__m128 *mpXformedPos[2];	
+
+		float mBBCenterW;
 };
 
 #endif

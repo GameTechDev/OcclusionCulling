@@ -80,14 +80,14 @@ void TransformedModelSSE::TooSmall(const BoxTestSetupSSE &setup, UINT idx)
 	{
 		MatrixMultiply(mWorldMatrix, setup.mViewProjViewport, mCumulativeMatrix[idx]);
 
-		float w = mBBCenterOS.x * mCumulativeMatrix[idx][0].m128_f32[3] +
+		mBBCenterW = mBBCenterOS.x * mCumulativeMatrix[idx][0].m128_f32[3] +
 				  mBBCenterOS.y * mCumulativeMatrix[idx][1].m128_f32[3] +
 				  mBBCenterOS.z * mCumulativeMatrix[idx][2].m128_f32[3] +
 				  mCumulativeMatrix[idx][3].m128_f32[3]; 
 
-		if(w > 1.0f)
+		if(mBBCenterW > 1.0f)
 		{
-			mTooSmall[idx] = mRadiusSq < w * setup.radiusThreshold;
+			mTooSmall[idx] = mRadiusSq < mBBCenterW * setup.radiusThreshold;
 		}
 		else
 		{
@@ -111,14 +111,14 @@ void TransformedModelSSE::InsideViewFrustum(const BoxTestSetupSSE &setup, UINT i
 	{
 		MatrixMultiply(mWorldMatrix, setup.mViewProjViewport, mCumulativeMatrix[idx]);
 
-		float w = mBBCenterOS.x * mCumulativeMatrix[idx][0].m128_f32[3] +
+		mBBCenterW = mBBCenterOS.x * mCumulativeMatrix[idx][0].m128_f32[3] +
 				  mBBCenterOS.y * mCumulativeMatrix[idx][1].m128_f32[3] +
 				  mBBCenterOS.z * mCumulativeMatrix[idx][2].m128_f32[3] +
 				  mCumulativeMatrix[idx][3].m128_f32[3]; 
 
-		if(w > 1.0f)
+		if(mBBCenterW > 1.0f)
 		{
-			mTooSmall[idx] = mRadiusSq < w * setup.radiusThreshold;
+			mTooSmall[idx] = mRadiusSq < mBBCenterW * setup.radiusThreshold;
 		}
 		else
 		{
@@ -208,5 +208,14 @@ void TransformedModelSSE::BinTransformedTrianglesMT(UINT taskId,
 
 			mpMeshes[meshId].BinTransformedTrianglesMT(taskId, modelId, meshId, start, end, pBin, pNumTrisInBin, idx);
 		}
+	}
+}
+
+void TransformedModelSSE::TransformAndRasterizeTrianglesST(MaskedOcclusionCulling *moc, UINT idx)
+{
+	if (mInsideViewFrustum[idx] && !mTooSmall[idx])
+	{
+		for (UINT meshId = 0; meshId < mNumMeshes; meshId++)
+			mpMeshes[meshId].TransformAndRasterizeTrianglesST(mCumulativeMatrix[idx], moc, idx);
 	}
 }
