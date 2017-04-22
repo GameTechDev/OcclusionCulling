@@ -1,258 +1,181 @@
-Code Samples License Agreement (Version December 2015)
 
-IMPORTANT - READ BEFORE COPYING, INSTALLING OR USING.  Do not copy, install or
-use the Materials (as defined below) provided under this license agreement
-("Agreement") from Intel Corporation ("Intel"), until you ("You") have carefully
-read the following terms and conditions. By copying, installing or otherwise
-using the Materials, You agree to be bound by the terms of this Agreement. If
-You do not agree to the terms of this Agreement, do not copy, install or use the
-Materials. 
+Apache License
+ Version 2.0, January 2004
 
-If You are agreeing to the terms and conditions of this Agreement on behalf of a
-company or other legal entity ("Legal Entity"), You represent and warrant that
-You have the legal authority to bind that Legal Entity to the Agreement, in
-which case, "You" or "Your" will mean such Legal Entity.
+ http://www.apache.org/licenses/ 
 
-By agreeing to this Agreement, You affirm that You are of legal age (18 years
-old or older) to enter into this Agreement.  If You are not of legal age You may
-not enter into this Agreement, and either Your parent, legal guardian or Legal
-Entity must agree to the terms and conditions of this Agreement and enter into
-this Agreement, in which case, "You" or "Your" will mean such parent, legal
-guardian, or Legal Entity.
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION 
 
-Third Party Programs (as defined below), even if included with the distribution
-of the Materials, are governed by separate third party license terms, including
-without limitation, open source software license terms. Such third party license
-terms (and not this Agreement) govern Your use of the Third Party Programs, and
-Intel is not liable for the Third Party Programs.
+1. Definitions.
 
-1.  LICENSE DEFINITIONS: 
+"License" shall mean the terms and conditions for use, reproduction, and 
+distribution as defined by Sections 1 through 9 of this document. 
 
-"Licensed Patent Claims" means the claims of Intel's patents that are
-necessarily and directly infringed by the reproduction and distribution of the
-Materials that is authorized in Section 2 below, when the Materials are in its
-unmodified form as delivered by Intel to You and not modified or combined with
-anything else.  Licensed Patent Claims are only those claims that Intel can
-license without paying, or getting the consent of, a third party.
+"Licensor" shall mean the copyright owner or entity authorized by the copyright 
+owner that is granting the License. 
 
-"Materials" means Sample Source Code, Redistributables, and End-User
-Documentation but do not include Third Party Programs. 
+"Legal Entity" shall mean the union of the acting entity and all other entities 
+that control, are controlled by, or are under common control with that entity. 
+For the purposes of this definition, "control" means (i) the power, direct or 
+indirect, to cause the direction or management of such entity, whether by 
+contract or otherwise, or (ii) ownership of fifty percent (50%) or more of the 
+outstanding shares, or (iii) beneficial ownership of such entity. 
 
-"Sample Source Code" means Source Code files that are identified as sample code
-and which may include example interface or application source code, and any
-updates, provided under this Agreement. 
+"You" (or "Your") shall mean an individual or Legal Entity exercising 
+permissions granted by this License. 
 
-"Source Code" is defined as the software (and not documentation or text) portion
-of the Materials provided in human readable format, and includes modifications
-that You make or are made on Your behalf as expressly permitted under the terms
-of this Agreement.
+"Source" form shall mean the preferred form for making modifications, including 
+but not limited to software source code, documentation source, and configuration 
+files. 
 
-"Redistributables" means header, library, and dynamically linkable library
-files, and any updates, provided under this Agreement. 
+"Object" form shall mean any form resulting from mechanical transformation or 
+translation of a Source form, including but not limited to compiled object code, 
+generated documentation, and conversions to other media types. 
 
-"Third Party Programs" (if any) are the third party software files that may be
-included with the Materials for the applicable software that include a separate
-third party license agreement in an attached text file.
+"Work" shall mean the work of authorship, whether in Source or Object form, made 
+available under the License, as indicated by a copyright notice that is included 
+in or attached to the work (an example is provided in the Appendix below). 
 
-"End-User Documentation" means textual materials intended for end users relating
-to the Materials. 
+"Derivative Works" shall mean any work, whether in Source or Object form, that 
+is based on (or derived from) the Work and for which the editorial revisions, 
+annotations, elaborations, or other modifications represent, as a whole, an 
+original work of authorship. For the purposes of this License, Derivative Works 
+shall not include works that remain separable from, or merely link (or bind by 
+name) to the interfaces of, the Work and Derivative Works thereof. 
 
-2.  LICENSE GRANT: 
+"Contribution" shall mean any work of authorship, including the original version 
+of the Work and any modifications or additions to that Work or Derivative Works 
+thereof, that is intentionally submitted to Licensor for inclusion in the Work 
+by the copyright owner or by an individual or Legal Entity authorized to submit 
+on behalf of the copyright owner. For the purposes of this definition, 
+"submitted" means any form of electronic, verbal, or written communication sent 
+to the Licensor or its representatives, including but not limited to 
+communication on electronic mailing lists, source code control systems, and 
+issue tracking systems that are managed by, or on behalf of, the Licensor for 
+the purpose of discussing and improving the Work, but excluding communication 
+that is conspicuously marked or otherwise designated in writing by the copyright 
+owner as "Not a Contribution." 
 
-Subject to the terms and conditions of this Agreement, Intel grants You a
-non-exclusive, worldwide, non-assignable, royalty-free limited right and
-license:
-A. under its copyrights, to:
-   1) Copy, modify, and compile the Sample Source Code and distribute it solely
-      in Your products in executable and source code form;
-   2) Copy and distribute the Redistributables solely with Your products;
-   3) Copy, modify, and distribute the End User Documentation solely with Your
-      products. 
+"Contributor" shall mean Licensor and any individual or Legal Entity on behalf 
+of whom a Contribution has been received by Licensor and subsequently 
+incorporated within the Work. 
 
-B. Under its patents, to:
-   1) make copies of the Materials internally only;
-   2) use the Materials internally only; and 3) offer to distribute, and
-      distribute, but not sell, the Materials only as part of or with Your
-      products, under Intel's copyright license granted in Section 2(A) but only
-      under the terms of that copyright license and not as a sale (but this
-      right does not include the right to sub-license);
-   4) provided, further, that the license under the Licensed Patent Claims does
-      not and will not apply to any modifications to, or derivative works of,
-      the Materials, whether made by You, Your end user (which, for all purposes
-      under this Agreement, will mean either an end user, a customer, reseller,
-      distributor or other channel partner), or any third party even if the
-      modification and creation of derivative works are permitted under 2(A).
+2. Grant of Copyright License. Subject to the terms and conditions of this 
+License, each Contributor hereby grants to You a perpetual, worldwide, 
+non-exclusive, no-charge, royalty-free, irrevocable copyright license to 
+reproduce, prepare Derivative Works of, publicly display, publicly perform, 
+sublicense, and distribute the Work and such Derivative Works in Source or 
+Object form. 
 
-3.  LICENSE RESTRICTIONS: 
+3. Grant of Patent License. Subject to the terms and conditions of this License, 
+each Contributor hereby grants to You a perpetual, worldwide, non-exclusive, 
+no-charge, royalty-free, irrevocable (except as stated in this section) patent 
+license to make, have made, use, offer to sell, sell, import, and otherwise 
+transfer the Work, where such license applies only to those patent claims 
+licensable by such Contributor that are necessarily infringed by their 
+Contribution(s) alone or by combination of their Contribution(s) with the Work 
+to which such Contribution(s) was submitted. If You institute patent litigation 
+against any entity (including a cross-claim or counterclaim in a lawsuit) 
+alleging that the Work or a Contribution incorporated within the Work 
+constitutes direct or contributory patent infringement, then any patent licenses 
+granted to You under this License for that Work shall terminate as of the date 
+such litigation is filed. 
 
-Except as expressly provided in this Agreement, You may not:
-i.    use, copy, distribute or publicly display the Materials;
-ii.   reverse-assemble, reverse-compile, or otherwise reverse-engineer any
-      software provided solely in binary form,
-iii.  rent or lease the Materials to any third party;
-iv.   assign this Agreement or display the Materials;
-v.    assign this Agreement or transfer the Materials;
-vi.   modify, adapt or translate the Materials in whole or in part;
-vii.  distribute, sublicense or transfer the source code form of the Materials
-      or derivatives thereof to any third party;
-viii. distribute the Materials except as part of Your products;
-ix.   include the Materials in malicious, deceptive, or unlawful programs or
-      products;
-x.    modify, create a derivative work, link or distribute the Materials so that
-      any part of it becomes subject to an Excluded License. 
+4. Redistribution. You may reproduce and distribute copies of the Work or 
+Derivative Works thereof in any medium, with or without modifications, and in 
+Source or Object form, provided that You meet the following conditions: 
+  You must give any other recipients of the Work or Derivative Works a copy of 
+  this License; and 
 
-Upon Intel's release of an update, upgrade, or new version of the Materials, you
-will make reasonable efforts to discontinue distribution of the enclosed
-Materials and you will make reasonable efforts to distribute such updates,
-upgrades, or new versions to your customers who have received the Materials
-herein. 
 
-Distribution of the Materials is also subject to the following limitations.
-You:
-i.    will be solely responsible to your customers for any update or support
-      obligation or other liability which may arise from the distribution;
-ii.   will not make any statement that your product is "certified", or that its
-      performance is guaranteed, by Intel;
-iii.  will not use Intel's name or trademarks to market your product without
-      written permission;
-iv.   will prohibit disassembly and reverse engineering of the Materials
-      provided in executable form;
-v.    will not publish reviews of Materials without written permission by Intel,
-      and
-vi.   will indemnify, hold harmless, and defend Intel and its suppliers from and
-      against any claims or lawsuits, including attorney's fees, that arise or
-      result from your distribution of any product.
+  You must cause any modified files to carry prominent notices stating that You 
+  changed the files; and 
 
-4. OWNERSHIP:
 
-Title to the Materials and all copies thereof remain with Intel or its
-suppliers. The Materials are copyrighted and are protected by United States
-copyright laws and international treaty provisions. You will not remove any
-copyright notice from the Materials. You agree to prevent unauthorized copying
-of the Materials. Except as expressly provided herein, Intel does not grant any
-express or implied right to you under Intel patents, copyrights, trademarks, or
-trade secret information. 
+  You must retain, in the Source form of any Derivative Works that You 
+  distribute, all copyright, patent, trademark, and attribution notices from the 
+  Source form of the Work, excluding those notices that do not pertain to any 
+  part of the Derivative Works; and 
 
-5. NO WARRANTY AND NO SUPPORT:
 
-Disclaimer.  Intel disclaims all warranties of any kind and the terms and
-remedies provided in this Agreement are instead of any other warranty or
-condition, express, implied or statutory, including those regarding
-merchantability, fitness for any particular purpose, non-infringement or any
-warranty arising out of any course of dealing, usage of trade, proposal,
-specification or sample.  Intel does not assume (and does not authorize any
-person to assume on its behalf) any other liability.
+  If the Work includes a "NOTICE" text file as part of its distribution, then 
+  any Derivative Works that You distribute must include a readable copy of the 
+  attribution notices contained within such NOTICE file, excluding those notices 
+  that do not pertain to any part of the Derivative Works, in at least one of 
+  the following places: within a NOTICE text file distributed as part of the 
+  Derivative Works; within the Source form or documentation, if provided along 
+  with the Derivative Works; or, within a display generated by the Derivative 
+  Works, if and wherever such third-party notices normally appear. The contents 
+  of the NOTICE file are for informational purposes only and do not modify the 
+  License. You may add Your own attribution notices within Derivative Works that 
+  You distribute, alongside or as an addendum to the NOTICE text from the Work, 
+  provided that such additional attribution notices cannot be construed as 
+  modifying the License.
+You may add Your own copyright statement to Your modifications and may provide 
+additional or different license terms and conditions for use, reproduction, or 
+distribution of Your modifications, or for any such Derivative Works as a whole, 
+provided Your use, reproduction, and distribution of the Work otherwise complies 
+with the conditions stated in this License. 
 
-Intel may make changes to the Materials, or to items referenced therein, at any
-time without notice, but is not obligated to support, update or provide training
-for the Materials. Intel may in its sole discretion offer such support, update
-or training services under separate terms at Intel's then-current rates. You
-may request additional information on Intel's service offerings from an Intel
-sales representative. 
+5. Submission of Contributions. Unless You explicitly state otherwise, any 
+Contribution intentionally submitted for inclusion in the Work by You to the 
+Licensor shall be under the terms and conditions of this License, without any 
+additional terms or conditions. Notwithstanding the above, nothing herein shall 
+supersede or modify the terms of any separate license agreement you may have 
+executed with Licensor regarding such Contributions. 
 
-6. USER SUBMISSIONS:
+6. Trademarks. This License does not grant permission to use the trade names, 
+trademarks, service marks, or product names of the Licensor, except as required 
+for reasonable and customary use in describing the origin of the Work and 
+reproducing the content of the NOTICE file. 
 
-You agree that any material, information, or other communication, including all
-data, images, sounds, text, and other things embodied therein, you transmit or
-post to an Intel website will be considered non-confidential ("Communications").
-Intel will have no confidentiality obligations with respect to the
-Communications. You agree that Intel and its designees will be free to copy,
-modify, create derivative works, publicly display, disclose, distribute, license
-and sublicense through multiple tiers of distribution and licensees,
-incorporate, and otherwise use the Communications, including derivative works
-thereto, for any and all commercial or non-commercial purposes. 
+7. Disclaimer of Warranty. Unless required by applicable law or agreed to in 
+writing, Licensor provides the Work (and each Contributor provides its 
+Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
+KIND, either express or implied, including, without limitation, any warranties 
+or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A 
+PARTICULAR PURPOSE. You are solely responsible for determining the 
+appropriateness of using or redistributing the Work and assume any risks 
+associated with Your exercise of permissions under this License. 
 
-7.LIMITATION OF LIABILITY:
+8. Limitation of Liability. In no event and under no legal theory, whether in 
+tort (including negligence), contract, or otherwise, unless required by 
+applicable law (such as deliberate and grossly negligent acts) or agreed to in 
+writing, shall any Contributor be liable to You for damages, including any 
+direct, indirect, special, incidental, or consequential damages of any character 
+arising as a result of this License or out of the use or inability to use the 
+Work (including but not limited to damages for loss of goodwill, work stoppage, 
+computer failure or malfunction, or any and all other commercial damages or 
+losses), even if such Contributor has been advised of the possibility of such 
+damages. 
 
-Neither Intel nor its suppliers shall be liable for any damages whatsoever
-(including, without limitation, damages for loss of business profits, business
-interruption, loss of business information, or other loss) arising out of the
-use of or inability to use the Materials, even if Intel has been advised of the
-possibility of such damages.  Because some jurisdictions prohibit the exclusion
-or limitation of liability for consequential or incidental damages, the above
-limitation may not apply to You.
+9. Accepting Warranty or Additional Liability. While redistributing the Work or 
+Derivative Works thereof, You may choose to offer, and charge a fee for, 
+acceptance of support, warranty, indemnity, or other liability obligations 
+and/or rights consistent with this License. However, in accepting such 
+obligations, You may act only on Your own behalf and on Your sole 
+responsibility, not on behalf of any other Contributor, and only if You agree to 
+indemnify, defend, and hold each Contributor harmless for any liability incurred 
+by, or claims asserted against, such Contributor by reason of your accepting any 
+such warranty or additional liability. 
 
-8. TERM AND TERMINATION: 
+END OF TERMS AND CONDITIONS 
 
-This Agreement commences upon Your copying, installing or using the Materials
-and continues until terminated.  Either You or Intel may terminate this
-Agreement at any time upon 30 days prior written notice to the other party.
-Intel may terminate this license at any time if you are in breach of any of its
-terms and conditions. Upon termination, You will immediately destroy the
-Materials or return all copies of the Materials to Intel along with any copies
-You have made. After termination, the license grant to any Materials or
-Redistributables distributed by You in accordance with the terms and conditions
-of this Agreement, prior to the effective date of such termination, will survive
-any such termination of this Agreement. 
+APPENDIX: How to apply the Apache License to your work 
 
-9. U.S. GOVERNMENT RESTRICTED RIGHTS:
+To apply the Apache License to your work, attach the following boilerplate 
+notice, with the fields enclosed by brackets "[]" replaced with your own 
+identifying information. (Don't include the brackets!) The text should be 
+enclosed in the appropriate comment syntax for the file format. We also 
+recommend that a file or class name and description of purpose be included on 
+the same "printed page" as the copyright notice for easier identification within 
+third-party archives. 
 
-The technical data and computer software covered by this license is a
-"Commercial Item", as such term is defined by the FAR 2.101 (48 C.F.R. 2.101)
-and is "commercial computer software" and "commercial computer software
-documentation" as specified under FAR 12.212 (48 C.F.R. 12.212) or DFARS
-227.7202 (48 C.F.R. 227.7202), as applicable. This commercial computer software
-and related documentation is provided to end users for use by and on behalf of
-the U.S. Government, with only those rights as are granted to all other end
-users pursuant to the terms and conditions herein. Use for or on behalf of the
-U.S. Government is permitted only if the party acquiring or using this software
-is properly authorized by an appropriate U.S. Government official. This use by
-or for the U.S. Government clause is in lieu of, and supersedes, any other FAR,
-DFARS, or other provision that addresses Government rights in the computer
-software or documentation covered by this license.  All copyright licenses
-granted to the U.S. Government are coextensive with the technical data and
-computer software licenses granted herein. The U.S. Government will only have
-the right to reproduce, distribute, perform, display, and prepare derivative
-works as needed to implement those rights. 
-
-10. APPLICABLE LAWS:
-
-All disputes arising out of or related to this Agreement, whether based on
-contract, tort, or any other legal or equitable theory, will in all respects be
-governed by, and construed and interpreted under, the laws of the United States
-of America and the State of Delaware, without reference to conflict of laws
-principles. The parties agree that the United Nations Convention on Contracts
-for the International Sale of Goods (1980) is specifically excluded from and
-will not apply to this Agreement. All disputes arising out of or related to this
-Agreement, whether based on contract, tort, or any other legal or equitable
-theory, will be subject to the exclusive jurisdiction of the courts of the State
-of Delaware or of the Federal courts sitting in that State. Each party submits
-to the personal jurisdiction of those courts and waives all objections to that
-jurisdiction and venue for those disputes.    
-
-10. SEVERABILITY:
-
-The parties intend that if a court holds that any provision or part of this
-Agreement is invalid or unenforceable under applicable law, the court will
-modify the provision to the minimum extent necessary to make it valid and
-enforceable, or if it cannot be made valid and enforceable, the parties intend
-that the court will sever and delete the provision or part from this Agreement.
-Any change to or deletion of a provision or part of this Agreement under this
-Section will not affect the validity or enforceability of the remainder of this
-Agreement, which will continue in full force and effect.
-
-11. EXPORT:
-
-You must comply with all laws and regulations of the United States and other
-countries governing the export, re-export, import, transfer, distribution, use,
-and servicing of Software.  In particular, You must not: (a) sell or transfer
-Software to a country subject to sanctions, or to any entity listed on a denial
-order published by the United States government or any other relevant
-government; or (b) use, sell, or transfer Software for the development, design,
-manufacture, or production of nuclear, missile, chemical or biological weapons,
-or for any other purpose prohibited by the United States government or other
-applicable government; without first obtaining all authorizations required by
-all applicable laws.  For more details on Your export obligations, please visit
-http://www.intel.com/content/www/us/en/legal/export-compliance.html?wapkw=export.
-
-12. ENTIRE AGREEMENT:
-
-This Agreement contains the complete and exclusive agreement and understanding
-between the parties concerning the subject matter of this Agreement, and
-supersedes all prior and contemporaneous proposals, agreements, understanding,
-negotiations, representations, warranties, conditions, and communications, oral
-or written, between the parties relating to the same subject matter. No
-modification or amendment to this Agreement will be effective unless in writing
-and signed by authorized representatives of each party, and must specifically
-identify this Agreement.
-
+Copyright [yyyy] [name of copyright owner] Licensed under the Apache License, 
+Version 2.0 (the "License"); you may not use this file except in compliance with 
+the License. You may obtain a copy of the License at 
+http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or 
+agreed to in writing, software distributed under the License is distributed on 
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express 
+or implied. See the License for the specific language governing permissions and 
+limitations under the License.
