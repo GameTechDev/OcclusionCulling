@@ -487,7 +487,7 @@ void CPUTGuiControllerDX11::Draw(ID3D11DeviceContext *pImmediateContext)
         {
             wchar_t wcstring[CPUT_MAX_STRING_LENGTH];
             float avgFps = total/(float)AVG_FRAMES;
-            swprintf_s(&wcstring[0], CPUT_MAX_STRING_LENGTH, _L("Window res: %d x %d, AVG FPS:%.2f (FPS:%.2f)  "), windowWidth, windowHeight, avgFps, fps);
+            swprintf_s(&wcstring[0], CPUT_MAX_STRING_LENGTH, _L("Window res: %d x %d, AVG FPS:%.2f \t(FPS:%.2f)  "), windowWidth, windowHeight, avgFps, fps);
             Data=wcstring;
         }
 		// build the FPS string
