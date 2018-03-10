@@ -157,7 +157,10 @@ public:
 
     // events
     virtual void Update(double deltaSeconds) {}
-    virtual void Present() { mpSwapChain->Present( mSyncInterval, 0 ); }
+    virtual void Present() 
+    { 
+        mpSwapChain->Present( mSyncInterval, 0 ); 
+    }
     virtual void Render(double deltaSeconds) = 0;
     virtual void Create()=0;
     virtual void Shutdown();

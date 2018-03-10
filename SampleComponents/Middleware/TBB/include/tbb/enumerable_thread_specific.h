@@ -102,14 +102,14 @@ namespace interface6 {
             virtual void* create_array(size_t _size) = 0;  // _size in bytes
             virtual void free_array(void* ptr, size_t _size) = 0; // _size in bytes
             array* allocate( size_t lg_size ) {
-                size_t n = 1<<lg_size;
+                size_t n = (size_t)1<<lg_size;
                 array* a = static_cast<array*>(create_array( sizeof(array)+n*sizeof(slot) ));
                 a->lg_size = lg_size;
                 std::memset( a+1, 0, n*sizeof(slot) );
                 return a;
             }
             void free(array* a) {
-                size_t n = 1<<(a->lg_size);
+                size_t n = (size_t)1<<(a->lg_size);
                 free_array( (void *)a, size_t(sizeof(array)+n*sizeof(slot)) );
             }
 

@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="AABBoxMaskedRasterizerAVXST.cpp" />
+    <ClCompile Include="AABBoxRasterizer.cpp" />
+    <ClCompile Include="AABBoxRasterizerAVX.cpp" />
+    <ClCompile Include="AABBoxRasterizerAVXMT.cpp" />
+    <ClCompile Include="AABBoxRasterizerAVXST.cpp" />
+    <ClCompile Include="AABBoxRasterizerScalar.cpp" />
+    <ClCompile Include="AABBoxRasterizerScalarMT.cpp" />
+    <ClCompile Include="AABBoxRasterizerScalarST.cpp" />
+    <ClCompile Include="AABBoxRasterizerSSE.cpp" />
+    <ClCompile Include="AABBoxRasterizerSSEMT.cpp" />
+    <ClCompile Include="AABBoxRasterizerSSEST.cpp" />
+    <ClCompile Include="DepthBufferMaskedRasterizerAVXST.cpp" />
+    <ClCompile Include="DepthBufferRasterizer.cpp" />
+    <ClCompile Include="DepthBufferRasterizerAVX.cpp" />
+    <ClCompile Include="DepthBufferRasterizerAVXMT.cpp" />
+    <ClCompile Include="DepthBufferRasterizerAVXST.cpp" />
+    <ClCompile Include="DepthBufferRasterizerScalar.cpp" />
+    <ClCompile Include="DepthBufferRasterizerScalarMT.cpp" />
+    <ClCompile Include="DepthBufferRasterizerScalarST.cpp" />
+    <ClCompile Include="DepthBufferRasterizerSSE.cpp" />
+    <ClCompile Include="DepthBufferRasterizerSSEMT.cpp" />
+    <ClCompile Include="DepthBufferRasterizerSSEST.cpp" />
+    <ClCompile Include="HelperAVX.cpp" />
+    <ClCompile Include="HelperScalar.cpp" />
+    <ClCompile Include="HelperSSE.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="OcclusionCulling.cpp" />
+    <ClCompile Include="TransformedAABBoxAVX.cpp" />
+    <ClCompile Include="TransformedAABBoxScalar.cpp" />
+    <ClCompile Include="TransformedAABBoxSSE.cpp" />
+    <ClCompile Include="TransformedMeshScalar.cpp" />
+    <ClCompile Include="TransformedMeshSSE.cpp" />
+    <ClCompile Include="TransformedModelScalar.cpp" />
+    <ClCompile Include="TransformedModelSSE.cpp" />
+    <ClCompile Include="MaskedOcclusionCulling\CullingThreadpool.cpp">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </ClCompile>
+    <ClCompile Include="MaskedOcclusionCulling\MaskedOcclusionCulling.cpp">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </ClCompile>
+    <ClCompile Include="MaskedOcclusionCulling\MaskedOcclusionCullingAVX2.cpp">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthBufferMaskedRasterizerAVXMT.cpp" />
+    <ClCompile Include="AABBoxMaskedRasterizerAVXMT.cpp" />
+    <ClCompile Include="MaskedOcclusionCulling\FrameRecorder.cpp">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </ClCompile>
+    <ClCompile Include="MaskedOcclusionCulling\MaskedOcclusionCullingAVX512.cpp">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AABBoxMaskedRasterizerAVXST.h" />
+    <ClInclude Include="AABBoxRasterizer.h" />
+    <ClInclude Include="AABBoxRasterizerAVX.h" />
+    <ClInclude Include="AABBoxRasterizerAVXMT.h" />
+    <ClInclude Include="AABBoxRasterizerAVXST.h" />
+    <ClInclude Include="AABBoxRasterizerScalar.h" />
+    <ClInclude Include="AABBoxRasterizerScalarMT.h" />
+    <ClInclude Include="AABBoxRasterizerScalarST.h" />
+    <ClInclude Include="AABBoxRasterizerSSE.h" />
+    <ClInclude Include="AABBoxRasterizerSSEMT.h" />
+    <ClInclude Include="AABBoxRasterizerSSEST.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="DepthBufferMaskedRasterizerAVXST.h" />
+    <ClInclude Include="DepthBufferRasterizer.h" />
+    <ClInclude Include="DepthBufferRasterizerAVX.h" />
+    <ClInclude Include="DepthBufferRasterizerAVXMT.h" />
+    <ClInclude Include="DepthBufferRasterizerAVXST.h" />
+    <ClInclude Include="DepthBufferRasterizerScalar.h" />
+    <ClInclude Include="DepthBufferRasterizerScalarMT.h" />
+    <ClInclude Include="DepthBufferRasterizerScalarST.h" />
+    <ClInclude Include="DepthBufferRasterizerSSE.h" />
+    <ClInclude Include="DepthBufferRasterizerSSEMT.h" />
+    <ClInclude Include="DepthBufferRasterizerSSEST.h" />
+    <ClInclude Include="HelperAVX.h" />
+    <ClInclude Include="HelperMT.h" />
+    <ClInclude Include="HelperScalar.h" />
+    <ClInclude Include="HelperSSE.h" />
+    <ClInclude Include="OcclusionCulling.h" />
+    <ClInclude Include="TransformedAABBoxAVX.h" />
+    <ClInclude Include="TransformedAABBoxScalar.h" />
+    <ClInclude Include="TransformedAABBoxSSE.h" />
+    <ClInclude Include="TransformedMeshScalar.h" />
+    <ClInclude Include="TransformedMeshSSE.h" />
+    <ClInclude Include="TransformedModelScalar.h" />
+    <ClInclude Include="TransformedModelSSE.h" />
+    <ClInclude Include="MaskedOcclusionCulling\CullingThreadpool.h">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </ClInclude>
+    <ClInclude Include="MaskedOcclusionCulling\MaskedOcclusionCulling.h">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthBufferMaskedRasterizerAVXMT.h" />
+    <ClInclude Include="AABBoxMaskedRasterizerAVXMT.h" />
+    <ClInclude Include="MaskedOcclusionCulling\FrameRecorder.h">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="MaskedOcclusionCulling">
+      <UniqueIdentifier>{2318f9b7-db0a-4895-b9f9-29f0c3c48459}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MaskedOcclusionCulling\MaskedOcclusionCullingCommon.inl">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </None>
+    <None Include="MaskedOcclusionCulling\README.md">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </None>
+    <None Include="MaskedOcclusionCulling\CompilerSpecific.inl">
+      <Filter>MaskedOcclusionCulling</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="TODO.txt" />
+  </ItemGroup>
+</Project>

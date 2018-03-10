@@ -23,6 +23,7 @@
 
 struct BinTriangle;
 class MaskedOcclusionCulling;
+class CullingThreadpool;
 
 class TransformedMeshSSE : public HelperSSE
 {
@@ -30,6 +31,7 @@ class TransformedMeshSSE : public HelperSSE
 		TransformedMeshSSE();
 		~TransformedMeshSSE();
 		void Initialize(CPUTMeshDX11* pMesh);
+        void UpdateReversedWindingIndices();
 		void TransformVertices(__m128 *cumulativeMatrix, 
 							   UINT start, 
 							   UINT end,
@@ -54,6 +56,7 @@ class TransformedMeshSSE : public HelperSSE
 									   UINT idx);
 
 		void TransformAndRasterizeTrianglesST(__m128 *cumulativeMatrix, MaskedOcclusionCulling *moc, UINT idx);
+        void TransformAndRasterizeTrianglesMT(__m128 *cumulativeMatrix, CullingThreadpool * mocThreadpool, UINT idx);
 
 		inline UINT GetNumTriangles() {return mNumTriangles;}
 		inline UINT GetNumVertices() {return mNumVertices;}
@@ -69,6 +72,7 @@ class TransformedMeshSSE : public HelperSSE
 		UINT mNumTriangles;
 		Vertex *mpVertices;
 		UINT *mpIndices;
+        std::vector<UINT> mIndicesTheOtherWayAround;
 		__m128 *mpXformedPos[2]; 
 		
 		void Gather(vFloat4 pOut[3], UINT triId, UINT numLanes, UINT idx);

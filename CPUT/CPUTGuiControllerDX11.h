@@ -48,7 +48,7 @@ const CPUTControlID ID_CPUT_GUI_FPS_COUNTER = 4000000201;        // pick very ra
 #include <d3d11.h>
 #include <DirectXMath.h>
 
-const int AVG_FRAMES = 30;
+const int AVG_FRAMES = 150;
 
 // the GUI controller class that dispatches the rendering calls to all the buttons
 //--------------------------------------------------------------------------------

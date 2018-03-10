@@ -373,9 +373,9 @@ inline float3 normalize(const float3 &v)
 inline float3 abs3( const float3 &l ) 
 { 
     float3 tmp; 
-    tmp.x = fabs(l.x); 
-    tmp.y = fabs(l.y); 
-    tmp.z = fabs(l.z); 
+    tmp.x = fabsf(l.x); 
+    tmp.y = fabsf(l.y); 
+    tmp.z = fabsf(l.z); 
     return tmp; 
 }
 

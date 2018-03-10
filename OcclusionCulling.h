@@ -29,7 +29,6 @@
 #include "DepthBufferRasterizerSSEST.h"
 #include "DepthBufferRasterizerSSEMT.h"
 
-#include "DepthBufferMaskedRasterizerAVXST.h"
 
 #include "DepthBufferRasterizerAVXST.h"
 #include "DepthBufferRasterizerAVXMT.h"
@@ -40,7 +39,11 @@
 #include "AABBoxRasterizerSSEST.h"
 #include "AABBoxRasterizerSSEMT.h"
 
+#include "DepthBufferMaskedRasterizerAVXST.h"
 #include "AABBoxMaskedRasterizerAVXST.h"
+
+#include "DepthBufferMaskedRasterizerAVXMT.h"
+#include "AABBoxMaskedRasterizerAVXMT.h"
 
 #include "AABBoxRasterizerAVXST.h"
 #include "AABBoxRasterizerAVXMT.h"
@@ -81,7 +84,8 @@ private:
 	CPUTText			  *mpCulledTrisText;
 	CPUTText			  *mpVisibleTrisText;
 	CPUTText			  *mpDepthTestTimeText;
-	CPUTSlider			  *mpOccludeeSizeSlider;
+    CPUTText			  *mpSOCDepthResolutionText;
+    CPUTSlider			  *mpOccludeeSizeSlider;
 
 	CPUTText			  *mpTotalCullTimeText;
 
@@ -92,6 +96,7 @@ private:
 	CPUTCheckbox		  *mpTasksCheckBox;
 	CPUTCheckbox		  *mpVsyncCheckBox;
 	CPUTCheckbox		  *mpPipelineCheckBox;
+    //CPUTCheckbox		  *mpOcclusionMatchGPUResolution;
 
 	CPUTText		      *mpDrawCallsText;
 	CPUTSlider			  *mpDepthTestTaskSlider;
@@ -129,6 +134,7 @@ private:
 	DepthBufferRasterizerAVXST		*mpDBRAVXST;
 	DepthBufferRasterizerAVXMT		*mpDBRAVXMT;
 	DepthBufferMaskedRasterizerAVXST *mpDBMRAVXST;
+    DepthBufferMaskedRasterizerAVXMT *mpDBMRAVXMT;
 
 	AABBoxRasterizer				*mpAABB;
 	AABBoxRasterizerScalarST		*mpAABBScalarST;
@@ -138,6 +144,7 @@ private:
 	AABBoxRasterizerAVXST			*mpAABBAVXST;
 	AABBoxRasterizerAVXMT			*mpAABBAVXMT;
 	AABBoxMaskedRasterizerAVXST		*mpAABBMAVXST;
+    AABBoxMaskedRasterizerAVXMT		*mpAABBMAVXMT;
 
 	UINT				mNumOccluders;
 	UINT				mNumOccludersR2DB;
@@ -170,6 +177,13 @@ private:
 	UINT				mPrevIdx;
 	bool				mFirstFrame;
 
+    //bool                mOcclusionMatchGPUResolution;
+
+    double              mTotalCullTimeHistories[300];
+    int                 mTotalCullTimeLastIndex;
+    double              mTotalCullTimeAvg;
+
+
 	void				SetupOcclusionCullingObjects();
 
 public:
@@ -191,7 +205,7 @@ public:
     virtual void Update(double deltaSeconds);
     virtual void ResizeWindow(UINT width, UINT height);
 	virtual void TaskCleanUp();
-	virtual void UpdateGPUDepthBuf(MaskedOcclusionCulling *moc);
+	virtual void UpdateGPUDepthBuf();
 	virtual void UpdateGPUDepthBuf(UINT idx);
 
 	// define some controls1
@@ -220,6 +234,7 @@ public:
 	static const CPUTControlID ID_NUM_OCCLUDEE_CULLED_TRIS = 2300;
 	static const CPUTControlID ID_NUM_OCCLUDEE_VISIBLE_TRIS = 2350;
 	static const CPUTControlID ID_DEPTHTEST_TIME = 2400;
+    static const CPUTControlID ID_SOCDEPTHRESOLUTIONTEXT = 2400;
 	static const CPUTControlID ID_OCCLUDEE_SIZE = 2500;
 
 	static const CPUTControlID ID_TOTAL_CULL_TIME = 2600;
@@ -233,5 +248,6 @@ public:
 	static const CPUTControlID ID_DEPTH_TEST_TASKS = 3300;
 	static const CPUTControlID ID_VSYNC_ON_OFF = 3400;
 	static const CPUTControlID ID_PIPELINE = 3500;
+    static const CPUTControlID ID_OCCLUSIONMATCHGPURESOLUTION = 3600;
 };
 #endif // __CPUT_SAMPLESTARTDX11_H__

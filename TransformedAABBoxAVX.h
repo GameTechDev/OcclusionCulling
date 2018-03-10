@@ -31,6 +31,7 @@
 //};
 
 class MaskedOcclusionCulling;
+class CullingThreadpool;
 
 class TransformedAABBoxAVX : public HelperAVX
 {

@@ -17,6 +17,7 @@
 #include "CPUTRenderTarget.h"
 #include "CPUTTextureDX11.h"
 #include "MaskedOcclusionCulling\MaskedOcclusionCulling.h"
+#include "MaskedOcclusionCulling\CullingThreadpool.h"
 
 const UINT SHADOW_WIDTH_HEIGHT = 256;
 
@@ -31,8 +32,9 @@ extern char *gpDefaultShaderSource;
 float gFarClipDistance = 2000.0f;
 
 MaskedOcclusionCulling *gMaskedOcclusionCulling = nullptr;
+CullingThreadpool *gMaskedOcclusionCullingThreadpool = nullptr;
 
-SOC_TYPE gSOCType = SSE_TYPE;
+SOC_TYPE gSOCType = SSE_TYPE; // MASK_AVX_TYPE; 
 float gOccluderSizeThreshold = 1.5f;
 float gOccludeeSizeThreshold = 0.01f;
 UINT  gDepthTestTasks		 = 20;
@@ -70,6 +72,7 @@ MySample::MySample() :
 	mpCulledTrisText(NULL),
 	mpVisibleTrisText(NULL),
 	mpDepthTestTimeText(NULL),
+    mpSOCDepthResolutionText(NULL),
 	mpOccludeeSizeSlider(NULL),
 	mpTotalCullTimeText(NULL),
 	mpCullingCheckBox(NULL),
@@ -79,6 +82,7 @@ MySample::MySample() :
 	mpTasksCheckBox(NULL),
 	mpVsyncCheckBox(NULL),
 	mpPipelineCheckBox(NULL),
+//    mpOcclusionMatchGPUResolution(NULL),
 	mpDrawCallsText(NULL),
 	mpDepthTestTaskSlider(NULL),
 	mpGPUDepthBuf(NULL),
@@ -108,6 +112,7 @@ MySample::MySample() :
 	mCurrIdx(0),
 	mPrevIdx(1),
 	mFirstFrame(true)
+//    mOcclusionMatchGPUResolution(true)
 {
 	mpCPURenderTargetScalar[0] = NULL;
 	mpCPURenderTargetScalar[1] = NULL;
@@ -139,6 +144,10 @@ MySample::MySample() :
 	mpAssetSetSky = NULL;
 	mpCPUDepthBuf[0] = mpCPUDepthBuf[1] = NULL;
 	mpShowDepthBufMtrlScalar = mpShowDepthBufMtrlSSE = mpShowDepthBufMtrlAVX = mpShowDepthBufMtrl = NULL;
+
+    memset( &mTotalCullTimeHistories, 0, sizeof( mTotalCullTimeHistories ) );
+    mTotalCullTimeLastIndex = 0;
+    mTotalCullTimeAvg = 0.0;
 }
 
 MySample::~MySample()
@@ -185,6 +194,11 @@ MySample::~MySample()
 	SAFE_RELEASE(mpShowDepthBufMtrlAVX);
 
 	CPUTModel::ReleaseStaticResources();
+    
+    delete gMaskedOcclusionCullingThreadpool;
+    gMaskedOcclusionCullingThreadpool = nullptr;
+    MaskedOcclusionCulling::Destroy( gMaskedOcclusionCulling );
+    gMaskedOcclusionCulling = nullptr;
 }
 
 void MySample::SetupOcclusionCullingObjects()
@@ -237,7 +251,7 @@ void MySample::SetupOcclusionCullingObjects()
 		mpAABBAVXMT = new AABBoxRasterizerAVXMT;
 		mpAABB = mpAABBAVXMT;
 	}
-	else if (mSOCType == MASK_AVX_TYPE)
+	else if (mSOCType == MASK_AVX_TYPE && !mEnableTasks )
 	{
 		mpDBMRAVXST = new DepthBufferMaskedRasterizerAVXST(gMaskedOcclusionCulling);
 		mpDBR = mpDBMRAVXST;
@@ -245,16 +259,38 @@ void MySample::SetupOcclusionCullingObjects()
 		mpAABBMAVXST = new AABBoxMaskedRasterizerAVXST(gMaskedOcclusionCulling);
 		mpAABB = mpAABBMAVXST;
 	}
+    else if( mSOCType == MASK_AVX_TYPE && mEnableTasks )
+    {
+//        assert( false ); // not yet implemented
+        mpDBMRAVXMT = new DepthBufferMaskedRasterizerAVXMT( gMaskedOcclusionCulling, gMaskedOcclusionCullingThreadpool );
+        mpDBR = mpDBMRAVXMT;
+
+        mpAABBMAVXMT = new AABBoxMaskedRasterizerAVXMT( gMaskedOcclusionCulling, gMaskedOcclusionCullingThreadpool, mpDBMRAVXMT );
+        mpAABB = mpAABBMAVXMT;
+    }
 }
 
+static unsigned int GetOptimalNumberOfThreads( );
 
 // Handle OnCreation events
 //-----------------------------------------------------------------------------
 void MySample::Create()
 {    
 	// Create occlusion culling resources
-	gMaskedOcclusionCulling = new MaskedOcclusionCulling();
-	gMaskedOcclusionCulling->SetResolution(SCREENW, SCREENH);
+	gMaskedOcclusionCulling = MaskedOcclusionCulling::Create();
+    gMaskedOcclusionCullingThreadpool = new CullingThreadpool( GetOptimalNumberOfThreads(), 10, 6, 128 );
+    gMaskedOcclusionCullingThreadpool->SetBuffer( gMaskedOcclusionCulling );
+
+    // Print which version (instruction set) is being used
+    MaskedOcclusionCulling::Implementation implementation = gMaskedOcclusionCulling->GetImplementation( );
+    switch( implementation ) {
+    case MaskedOcclusionCulling::SSE2: printf( "Using SSE2 version\n" ); break;
+    case MaskedOcclusionCulling::SSE41: printf( "Using SSE41 version\n" ); break;
+    case MaskedOcclusionCulling::AVX2: printf( "Using AVX2 version\n" ); break;
+    }
+
+	//gMaskedOcclusionCulling->SetResolution(SCREENW, SCREENH);
+    gMaskedOcclusionCullingThreadpool->SetResolution(SCREENW, SCREENH);
 	SetupOcclusionCullingObjects();
 	
 	CPUTAssetLibrary *pAssetLibrary = CPUTAssetLibrary::GetAssetLibrary();
@@ -274,7 +310,7 @@ void MySample::Create()
 	if (CanUseIntelCore4thGenFeatures())
 	{
 		mpTypeDropDown->AddSelectionItem(L"Rasterizer Technique: AVX");
-		mpTypeDropDown->AddSelectionItem(L"Rasterizer Technique: Mask AVX");
+		mpTypeDropDown->AddSelectionItem(L"Rasterizer Technique: MOC");
 	}
 	mpTypeDropDown->SetSelectedItem(mSOCType + 1);
    
@@ -325,6 +361,9 @@ void MySample::Create()
 	swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("\tVisible Triangles: \t%0.2f ms"), mDepthTestTime);
 	pGUI->CreateText(string, ID_DEPTHTEST_TIME, ID_MAIN_PANEL, &mpDepthTestTimeText);
 
+    swprintf_s( &string[0], CPUT_MAX_STRING_LENGTH, _L( "\tSOC Depth Resolution: \t%d x %d"), 128, 64);
+    pGUI->CreateText( string, ID_SOCDEPTHRESOLUTIONTEXT, ID_MAIN_PANEL, &mpSOCDepthResolutionText);
+
 	swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("Occludee Size Threshold: %0.4f"), mOccludeeSizeThreshold);
 	pGUI->CreateSlider(string, ID_OCCLUDEE_SIZE, ID_MAIN_PANEL, &mpOccludeeSizeSlider);
 	mpOccludeeSizeSlider->SetScale(0, 0.1f, 41);
@@ -338,9 +377,12 @@ void MySample::Create()
 	pGUI->CreateCheckbox(_L("Frustum Culling"),  ID_ENABLE_FCULLING, ID_MAIN_PANEL, &mpFCullingCheckBox);
 	pGUI->CreateCheckbox(_L("View Depth Buffer"),  ID_DEPTH_BUFFER_VISIBLE, ID_MAIN_PANEL, &mpDBCheckBox);
 	pGUI->CreateCheckbox(_L("View Bounding Box"),  ID_BOUNDING_BOX_VISIBLE, ID_MAIN_PANEL, &mpBBCheckBox);
-	pGUI->CreateCheckbox(_L("Multi Tasking"), ID_ENABLE_TASKS, ID_MAIN_PANEL, &mpTasksCheckBox);
+	pGUI->CreateCheckbox(_L("Multithreaded Culling"), ID_ENABLE_TASKS, ID_MAIN_PANEL, &mpTasksCheckBox);
 	pGUI->CreateCheckbox(_L("Vsync"), ID_VSYNC_ON_OFF, ID_MAIN_PANEL, &mpVsyncCheckBox);
 	pGUI->CreateCheckbox(_L("Pipeline"), ID_PIPELINE, ID_MAIN_PANEL, &mpPipelineCheckBox);
+
+    //pGUI->CreateCheckbox( _L( "Match Occlusion to Framebuffer Resolution" ), ID_OCCLUSIONMATCHGPURESOLUTION, ID_MAIN_PANEL, &mpOcclusionMatchGPUResolution );
+    
 
 	swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("Number of draw calls: \t%d"), mNumDrawCalls);
 	pGUI->CreateText(string, ID_NUM_DRAW_CALLS, ID_MAIN_PANEL, &mpDrawCallsText),
@@ -568,7 +610,7 @@ void MySample::Create()
 	//
 	pAssetLibrary->SetMediaDirectoryName(_L("Media\\Castle\\"));
 
-#ifdef DEBUG
+#if 0//#ifdef DEBUG
     mpAssetSetDBR[0] = pAssetLibrary->GetAssetSet(_L("castleLargeOccluders"));
 	ASSERT(mpAssetSetDBR[0], _L("Failed loading castle."));
 
@@ -691,6 +733,16 @@ void MySample::Create()
 		state = CPUT_CHECKBOX_UNCHECKED;
 	}
 	mpPipelineCheckBox->SetCheckboxState(state);
+
+//    if(mOcclusionMatchGPUResolution)
+//    {
+//        state = CPUT_CHECKBOX_CHECKED;
+//    }
+//    else
+//    {
+//        state = CPUT_CHECKBOX_UNCHECKED;
+//    }
+//    mpOcclusionMatchGPUResolution->SetCheckboxState(state);
 
 	// Setting occluder size threshold in DepthBufferRasterizer
 	mpDBR->SetOccluderSizeThreshold(mOccluderSizeThreshold);
@@ -828,6 +880,7 @@ CPUTEventHandledCode MySample::HandleKeyboardEvent(CPUTKey key)
 				mpCulledTrisText->SetText(   _L("\tCulled tris: \t\t0"));
 				mpVisibleTrisText->SetText(   _L("\tVisible tris: \t\t0"));
 				mpDepthTestTimeText->SetText(_L("\tDepth test time: \t0 ms"));
+                mpSOCDepthResolutionText->SetText(_L("\tSOC Depth Resolution: \t0 x 0"));
 			}
 			mpCullingCheckBox->SetCheckboxState(state);
 			break;
@@ -954,6 +1007,20 @@ CPUTEventHandledCode MySample::HandleKeyboardEvent(CPUTKey key)
 			mpPipelineCheckBox->SetCheckboxState(state);
 			break;
 		}
+//    case KEY_9:
+//        {
+//            mOcclusionMatchGPUResolution = !mOcclusionMatchGPUResolution;
+//            CPUTCheckboxState state;
+//            if( mOcclusionMatchGPUResolution )
+//            {
+//                state = CPUT_CHECKBOX_CHECKED;
+//            }
+//            else
+//            {
+//                state = CPUT_CHECKBOX_UNCHECKED;
+//            }
+//            mpOcclusionMatchGPUResolution->SetCheckboxState( state );
+//        } break;
     }
 	
     // pass it to the camera controller
@@ -1004,6 +1071,57 @@ CPUTEventHandledCode MySample::HandleMouseEvent(int x, int y, int wheel, CPUTMou
         return mpCameraController->HandleMouseEvent(x, y, wheel, state);
     }
     return CPUT_EVENT_UNHANDLED;
+}
+
+static void SplitPath( const std::wstring & inFullPath, std::wstring * outDirectory, std::wstring * outFileName, std::wstring * outFileExt )
+{
+    wchar_t buffDrive[32];
+    wchar_t buffDir[4096];
+    wchar_t buffName[4096];
+    wchar_t buffExt[4096];
+
+    //assert( !((outDirectory != NULL) && ( (outDirectory != outFileName) || (outDirectory != outFileExt) )) );
+    //assert( !((outFileName != NULL) && (outFileName != outFileExt)) );
+
+    _wsplitpath_s( inFullPath.c_str( ), buffDrive, _countof( buffDrive ),
+        buffDir, _countof( buffDir ), buffName, _countof( buffName ), buffExt, _countof( buffExt ) );
+
+    if( outDirectory != NULL ) *outDirectory = std::wstring( buffDrive ) + std::wstring( buffDir );
+    if( outFileName != NULL )  *outFileName = buffName;
+    if( outFileExt != NULL )   *outFileExt = buffExt;
+}
+
+std::string SimpleNarrow( const std::wstring & s )
+{
+    std::string ws;
+    ws.resize( s.size( ) );
+    for( size_t i = 0; i < s.size( ); i++ ) ws[i] = (char)s[i];
+    return ws;
+}
+
+
+std::wstring GetExecutableDirectory( )
+{
+    wchar_t buffer[4096];
+
+    GetModuleFileName( NULL, buffer, _countof( buffer ) );
+
+    std::wstring outDir;
+    SplitPath( buffer, &outDir, NULL, NULL );
+
+    return outDir;
+}
+
+bool FileExists( const std::wstring & path )
+{
+    FILE * fp = NULL;
+    _wfopen_s( &fp, path.c_str( ), L"rb" );
+    if( fp != NULL )
+    {
+        fclose( fp );
+        return true;
+    }
+    return false;
 }
 
 // Handle any control callback events
@@ -1085,12 +1203,17 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 			mpShowDepthBufMtrl = mpShowDepthBufMtrlScalar;
 			rowPitch = SCREENW * 4;
 
-			// For mask algorithm, disable multi-threading (not implemented)
-			mEnableTasks = false;
-			mpPipelineCheckBox->SetVisibility(false);
-			mpDepthTestTaskSlider->SetVisibility(false);
-			mpTasksCheckBox->SetCheckboxState(CPUT_CHECKBOX_UNCHECKED);
-			mpTasksCheckBox->SetVisibility(false);
+			// For mask algorithm, disable some of the unused stuff
+			// mEnableTasks = false;
+            if( mSOCType == MASK_AVX_TYPE )
+            {
+                mPipeline = false;
+                mpPipelineCheckBox->SetCheckboxState(CPUT_CHECKBOX_UNCHECKED);
+			    mpPipelineCheckBox->SetVisibility(false);
+			    mpDepthTestTaskSlider->SetVisibility(false);
+            }
+			// mpTasksCheckBox->SetCheckboxState(CPUT_CHECKBOX_UNCHECKED);
+			// mpTasksCheckBox->SetVisibility(false);
 		}
 		mpDBR->CreateTransformedModels(mpAssetSetDBR, OCCLUDER_SETS);		
 		mpDBR->SetOccluderSizeThreshold(mOccluderSizeThreshold);
@@ -1149,6 +1272,16 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 			wchar_t string[CPUT_MAX_STRING_LENGTH];
 			swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("Depth Test Task: \t%d"), mNumDepthTestTasks);
 			mpDepthTestTaskSlider->SetText(string);
+
+			// For mask algorithm, disable some of the unused stuff
+			// mEnableTasks = false;
+            if( mSOCType == MASK_AVX_TYPE )
+            {
+                mPipeline = false;
+                mpPipelineCheckBox->SetCheckboxState(CPUT_CHECKBOX_UNCHECKED);
+			    mpPipelineCheckBox->SetVisibility(false);
+			    mpDepthTestTaskSlider->SetVisibility(false);
+            }
 			
 			SetupOcclusionCullingObjects();
 			mpAABB->SetDepthTestTasks(mNumDepthTestTasks);
@@ -1240,6 +1373,7 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 			mpCulledTrisText->SetText(   _L("\tCulled tris: \t\t0"));
 			mpVisibleTrisText->SetText(  _L("\tVisible tris: \t\t0"));
 			mpDepthTestTimeText->SetText(_L("\tDepth test time: \t0 ms"));
+            mpSOCDepthResolutionText->SetText(_L("\tSOC Depth Resolution: \t0 x 0"));
 			mpTotalCullTimeText->SetText(_L("\tTotal Cull time: \t0 ms"));
 		}
 		break;
@@ -1290,6 +1424,20 @@ void MySample::HandleCallbackEvent( CPUTEventID Event, CPUTControlID ControlID, 
 		}
 		break;
 	}
+//    case ID_OCCLUSIONMATCHGPURESOLUTION:
+//    {
+//        mOcclusionMatchGPUResolution = !mOcclusionMatchGPUResolution;
+//        CPUTCheckboxState state;
+//        if( mOcclusionMatchGPUResolution )
+//        {
+//            state = CPUT_CHECKBOX_CHECKED;
+//        }
+//        else
+//        {
+//            state = CPUT_CHECKBOX_UNCHECKED;
+//        }
+//        mpOcclusionMatchGPUResolution->SetCheckboxState( state );
+//    } break;
     default:
         break;
     }
@@ -1315,63 +1463,55 @@ void MySample::ResizeWindow(UINT width, UINT height)
     pAssetLibrary->RebindTexturesAndBuffers();
 }
 
-void MySample::UpdateGPUDepthBuf(UINT idx)
+static void DepthColorize( const float * inFloatArray, char	* outColorArray )
 {
-	unsigned char depth;
-	float *depthfloat;
-	int tmpdepth;
-	int maxdepth = 0;
+    unsigned char depth;
+    float depthfloat;
+    int tmpdepth;
+    int maxdepth = 0;
 
-	for(int i = 0; i < SCREENW * SCREENH * 4; i += 4)
-	{
-		depthfloat = (float*)&mpCPUDepthBuf[idx][i];
+    for( int i = 0; i < SCREENW * SCREENH; i++ )
+    {
+        depthfloat = inFloatArray[i];
 
-		tmpdepth = (int)ceil(*depthfloat * 30000);
-		maxdepth = tmpdepth > maxdepth ? tmpdepth : maxdepth;
-	}
+        tmpdepth = (int)ceil( depthfloat * 30000 );
+        maxdepth = tmpdepth > maxdepth ? tmpdepth : maxdepth;
+    }
 
-	float scale = 255.0f / maxdepth;
+    float scale = 255.0f / maxdepth;
 
-	for(int i = 0; i < SCREENW * SCREENH * 4; i += 4)
-	{
-		depthfloat = (float*)&mpCPUDepthBuf[idx][i];
+    for( int i = 0; i < SCREENW * SCREENH; i++ )
+    {
+        depthfloat = inFloatArray[i];
+        if( depthfloat < 0 )
+            depthfloat = 0.0f;
 
-		tmpdepth = (int)ceil(*depthfloat * 20000);
-		depth = (char)(tmpdepth * scale);
-		depth = depth > 255 ? 255 : depth;
+        tmpdepth = (int)ceil( depthfloat * 20000 );
+        depth = (char)( tmpdepth * scale );
+        depth = depth > 255 ? 255 : depth;
 
-		mpGPUDepthBuf[i + 0] = depth;
-		mpGPUDepthBuf[i + 1] = depth;
-		mpGPUDepthBuf[i + 2] = depth;
-		mpGPUDepthBuf[i + 3] = depth;
-	}
+        outColorArray[i*4 + 0] = depth;
+        outColorArray[i*4 + 1] = depth;
+        outColorArray[i*4 + 2] = depth;
+        outColorArray[i*4 + 3] = depth;
+    }
 }
 
-void MySample::UpdateGPUDepthBuf(MaskedOcclusionCulling *moc)
+void MySample::UpdateGPUDepthBuf(UINT idx)
+{
+    DepthColorize( (float*)mpCPUDepthBuf[idx], mpGPUDepthBuf );
+}
+
+void MySample::UpdateGPUDepthBuf()
 {
 	float *pixels = new float[SCREENW*SCREENH];
-	moc->ComputePixelDepthBuffer(pixels);
 
-	float maxdepth = -1, mindepth = FLT_MAX;
-	for (int i = 0; i < SCREENW*SCREENH; ++i)
-	{
-		if (pixels[i] > 0.0f)
-		{
-			maxdepth = max(maxdepth, pixels[i]);
-			mindepth = min(mindepth, pixels[i]);
-		}
-	}
+    if( mEnableTasks )
+        gMaskedOcclusionCullingThreadpool->ComputePixelDepthBuffer(pixels, false);
+    else
+	    gMaskedOcclusionCulling->ComputePixelDepthBuffer(pixels, false);
 
-	for (int i = 0; i < SCREENW*SCREENH; ++i)
-	{
-		unsigned char intensity = 0;
-		if (pixels[i] > 0.0f)
-			intensity = (unsigned char)(((pixels[i] - mindepth) / (maxdepth - mindepth))*192.0f + 63.0f);
-		mpGPUDepthBuf[i * 4 + 0] = intensity;
-		mpGPUDepthBuf[i * 4 + 1] = intensity;
-		mpGPUDepthBuf[i * 4 + 2] = intensity;
-		mpGPUDepthBuf[i * 4 + 3] = intensity;
-	}
+    DepthColorize( pixels, mpGPUDepthBuf );
 
 	delete[] pixels;
 }
@@ -1382,6 +1522,23 @@ void MySample::UpdateGPUDepthBuf(MaskedOcclusionCulling *moc)
 void MySample::Render(double deltaSeconds)
 {
     CPUTRenderParametersDX renderParams(mpContext);
+
+#if MOC_RECORDER_ENABLE
+    // set this to true here to capture one frame of MOC data
+    static bool bTriggerMOCCapture = false;
+    
+    if( bTriggerMOCCapture && !(mEnableCulling && (mSOCType == MASK_AVX_TYPE)) )
+        bTriggerMOCCapture = false;
+    if( bTriggerMOCCapture )
+    {
+        static int captureIndex = 0;
+
+        char fileName[1024]; sprintf_s( fileName, sizeof( fileName ), "OcclusionCulling_%d.mocrec", captureIndex );
+        gMaskedOcclusionCulling->StartRecording( fileName );
+
+        captureIndex++;
+    }
+#endif
 
 	// If mViewBoundingBox is enabled then draw the axis aligned bounding box 
 	// for all the model in the scene. FYI This will affect frame rate.
@@ -1431,6 +1588,15 @@ void MySample::Render(double deltaSeconds)
 	// if software occlusion culling is enabled
 	if(mEnableCulling)
 	{
+        LARGE_INTEGER totalCullTimeStartTime;
+        QueryPerformanceCounter( &totalCullTimeStartTime );
+
+        if( mSOCType == MASK_AVX_TYPE && mEnableTasks )
+        {
+            // now done in the culling code itself just before starting work
+            //gMaskedOcclusionCullingThreadpool->WakeThreads();
+        }
+
 		// Set the Depth Buffer
 		mpCPURenderTargetPixels = (UINT*)mpCPUDepthBuf[mCurrIdx];
 		
@@ -1467,7 +1633,19 @@ void MySample::Render(double deltaSeconds)
 				mpAABB->ReleaseTaskHandles(mCurrIdx);
 			}
 		}
-	}
+
+        LARGE_INTEGER totalCullTimeEndTime;
+        QueryPerformanceCounter( &totalCullTimeEndTime );
+
+        mTotalCullTimeLastIndex = ( mTotalCullTimeLastIndex + 1 ) % _countof( mTotalCullTimeHistories );
+        mTotalCullTimeHistories[mTotalCullTimeLastIndex]= ( (double)( totalCullTimeEndTime.QuadPart - totalCullTimeStartTime.QuadPart ) ) / ( (double)glFrequency.QuadPart );
+        mTotalCullTimeAvg = 0.0;
+        for ( int i = 0; i < _countof( mTotalCullTimeHistories ); i++ )
+        {
+            mTotalCullTimeAvg += mTotalCullTimeHistories[i];
+        }
+        mTotalCullTimeAvg /= (double)_countof( mTotalCullTimeHistories );
+    }
 	
 	// If mViewDepthBuffer is enabled then blit the CPU rasterized depth buffer to the frame buffer
 	if(mViewDepthBuffer)
@@ -1475,7 +1653,7 @@ void MySample::Render(double deltaSeconds)
 		mpShowDepthBufMtrl->SetRenderStates(renderParams);
 		if (mSOCType == MASK_AVX_TYPE)
 		{
-			UpdateGPUDepthBuf(gMaskedOcclusionCulling);
+			UpdateGPUDepthBuf();
 			mpContext->UpdateSubresource(mpCPURenderTarget[mCurrIdx], 0, NULL, mpGPUDepthBuf, rowPitch, 0);
 		}
 		else
@@ -1493,9 +1671,20 @@ void MySample::Render(double deltaSeconds)
 				mpContext->UpdateSubresource(mpCPURenderTarget[mCurrIdx], 0, NULL, mpGPUDepthBuf, rowPitch, 0);
 			}
 		}
+    }
+
+    if( mEnableCulling && (mSOCType == MASK_AVX_TYPE) && mEnableTasks )
+    {
+        // clear for the next frame
+        mpDBMRAVXMT->MOCDepthSetDirty();
+    }
+
+	// If mViewDepthBuffer, debug draw CPU rasterized depth
+	if(mViewDepthBuffer)
+	{
 		mpContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 		mpContext->Draw(3, 0);
-	}
+    }
 	// else render the (frustum culled) occluders and only the visible occludees
 	else
 	{
@@ -1539,7 +1728,7 @@ void MySample::Render(double deltaSeconds)
 	{
 		if(mEnableTasks && mPipeline)
 		{
-			mpDBR->ComputeR2DBTime(mPrevIdx);
+     		mpDBR->ComputeR2DBTime(mPrevIdx);
 			mNumOccludersR2DB = mpDBR->GetNumOccludersR2DB(mPrevIdx);
 			mNumOccluderRasterizedTris = mpDBR->GetNumRasterizedTriangles(mPrevIdx);
 			mNumCulled = mpAABB->GetNumCulled(mPrevIdx);
@@ -1555,6 +1744,12 @@ void MySample::Render(double deltaSeconds)
 		}
 		mRasterizeTime = mpDBR->GetRasterizeTime();
 		
+        if( mSOCType == MASK_AVX_TYPE && mEnableTasks )
+        {
+            // now in AABBoxMaskedRasterizerAVXMT::TransformAABBoxAndDepthTest
+            //gMaskedOcclusionCullingThreadpool->SuspendThreads( );
+        }
+
 		mNumVisible = mNumOccludees - mNumCulled;
 		mNumOccludeeVisibleTris = mNumOccludeeTris - mNumOccludeeCulledTris;
 		
@@ -1583,9 +1778,13 @@ void MySample::Render(double deltaSeconds)
 		mpVisibleTrisText->SetText(string);
 
 		swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("\tDepth test time: \t%0.2f ms"), mDepthTestTime * 1000.0f);
-		mpDepthTestTimeText->SetText(string);		
+		mpDepthTestTimeText->SetText(string);
 
-		swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("\tTotal Cull time: \t%0.2f ms"), mTotalCullTime * 1000.0f);
+        swprintf_s( &string[0], CPUT_MAX_STRING_LENGTH, _L( "\tSOC Depth Resolution: \t%d x %d" ), SCREENW, SCREENH );
+        mpSOCDepthResolutionText->SetText(string);
+
+		//swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("\tTotal Cull time: \t%0.2f ms"), mTotalCullTime * 1000.0f);
+        swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("\tTotal Cull time: \t%0.2f ms"), mTotalCullTimeAvg * 1000.0f);
 		mpTotalCullTimeText->SetText(string);
 	}
 	else
@@ -1618,7 +1817,17 @@ void MySample::Render(double deltaSeconds)
 	swprintf_s(&string[0], CPUT_MAX_STRING_LENGTH, _L("Number of draw calls: \t\t %d"), mNumDrawCalls);
 	mpDrawCallsText->SetText(string);
 	
-    CPUTDrawGUI();
+    {
+        CPUTDrawGUI();
+    }
+
+#if MOC_RECORDER_ENABLE
+    if( bTriggerMOCCapture )
+    {
+        gMaskedOcclusionCulling->StopRecording();
+        bTriggerMOCCapture = false;
+    }
+#endif
 }
 
 
@@ -1774,3 +1983,173 @@ float4 PSMainNoTexture( PS_INPUT_NO_TEX input ) : SV_Target\n\
 }\n\
 ";
 
+typedef BOOL( WINAPI *LPFN_GLPI )(
+    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION,
+    PDWORD );
+
+
+// Helper function to count set bits in the processor mask.
+static DWORD CountSetBits( ULONG_PTR bitMask )
+{
+    DWORD LSHIFT = sizeof( ULONG_PTR ) * 8 - 1;
+    DWORD bitSetCount = 0;
+    ULONG_PTR bitTest = (ULONG_PTR)1 << LSHIFT;
+    DWORD i;
+
+    for( i = 0; i <= LSHIFT; ++i )
+    {
+        bitSetCount += ( ( bitMask & bitTest ) ? 1 : 0 );
+        bitTest /= 2;
+    }
+
+    return bitSetCount;
+}
+
+static void GetCPUCoreCountInfo( int & physicalPackages, int & physicalCores, int & logicalCores )
+{
+    // how difficult could it be to get logical core count?
+    // well, apparently, according to https://msdn.microsoft.com/en-us/library/windows/desktop/ms683194%28v=vs.85%29.aspx,  difficult:
+
+    LPFN_GLPI glpi;
+    BOOL done = FALSE;
+    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = NULL;
+    PSYSTEM_LOGICAL_PROCESSOR_INFORMATION ptr = NULL;
+    DWORD returnLength = 0;
+    DWORD logicalProcessorCount = 0;
+    DWORD numaNodeCount = 0;
+    DWORD processorCoreCount = 0;
+    DWORD processorL1CacheCount = 0;
+    DWORD processorL2CacheCount = 0;
+    DWORD processorL3CacheCount = 0;
+    DWORD processorPackageCount = 0;
+    DWORD byteOffset = 0;
+    PCACHE_DESCRIPTOR Cache;
+
+    physicalPackages = -1;
+    physicalCores = -1;
+    logicalCores = -1;
+
+    glpi = (LPFN_GLPI)GetProcAddress(
+        GetModuleHandle( TEXT( "kernel32" ) ),
+        "GetLogicalProcessorInformation" );
+    if( NULL == glpi )
+    {
+        _tprintf( TEXT( "\nGetLogicalProcessorInformation is not supported.\n" ) );
+        assert( false );
+        return;
+    }
+
+    while( !done )
+    {
+        DWORD rc = glpi( buffer, &returnLength );
+
+        if( FALSE == rc )
+        {
+            if( GetLastError( ) == ERROR_INSUFFICIENT_BUFFER )
+            {
+                if( buffer )
+                    free( buffer );
+
+                buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)malloc(
+                    returnLength );
+
+                if( NULL == buffer )
+                {
+                    _tprintf( TEXT( "\nError: Allocation failure\n" ) );
+                    assert( false );
+                    return;
+                }
+            }
+            else
+            {
+                _tprintf( TEXT( "\nError %d\n" ), GetLastError( ) );
+                assert( false );
+                return;
+            }
+        }
+        else
+        {
+            done = TRUE;
+        }
+    }
+
+    ptr = buffer;
+
+    while( byteOffset + sizeof( SYSTEM_LOGICAL_PROCESSOR_INFORMATION ) <= returnLength )
+    {
+        switch( ptr->Relationship )
+        {
+        case RelationNumaNode:
+            // Non-NUMA systems report a single record of this type.
+            numaNodeCount++;
+            break;
+
+        case RelationProcessorCore:
+            processorCoreCount++;
+
+            // A hyperthreaded core supplies more than one logical processor.
+            logicalProcessorCount += CountSetBits( ptr->ProcessorMask );
+            break;
+
+        case RelationCache:
+            // Cache data is in ptr->Cache, one CACHE_DESCRIPTOR structure for each cache. 
+            Cache = &ptr->Cache;
+            if( Cache->Level == 1 )
+            {
+                processorL1CacheCount++;
+            }
+            else if( Cache->Level == 2 )
+            {
+                processorL2CacheCount++;
+            }
+            else if( Cache->Level == 3 )
+            {
+                processorL3CacheCount++;
+            }
+            break;
+
+        case RelationProcessorPackage:
+            // Logical processors share a physical package.
+            processorPackageCount++;
+            break;
+
+        default:
+            _tprintf( TEXT( "\nError: Unsupported LOGICAL_PROCESSOR_RELATIONSHIP value.\n" ) );
+            break;
+        }
+        byteOffset += sizeof( SYSTEM_LOGICAL_PROCESSOR_INFORMATION );
+        ptr++;
+    }
+
+    //_tprintf( TEXT( "\nGetLogicalProcessorInformation results:\n" ) );
+    //_tprintf( TEXT( "Number of NUMA nodes: %d\n" ),
+    //    numaNodeCount );
+    //_tprintf( TEXT( "Number of physical processor packages: %d\n" ),
+    //    processorPackageCount );
+    //_tprintf( TEXT( "Number of processor cores: %d\n" ),
+    //    processorCoreCount );
+    //_tprintf( TEXT( "Number of logical processors: %d\n" ),
+    //    logicalProcessorCount );
+    //_tprintf( TEXT( "Number of processor L1/L2/L3 caches: %d/%d/%d\n" ),
+    //    processorL1CacheCount,
+    //    processorL2CacheCount,
+    //    processorL3CacheCount );
+    //
+    //
+    free( buffer );
+
+    physicalPackages = processorPackageCount;
+    physicalCores = processorCoreCount;
+    logicalCores = logicalProcessorCount;
+}
+
+static unsigned int GetOptimalNumberOfThreads( )
+{
+    int physicalPackages;
+    int physicalCores;
+    int logicalCores;
+
+    GetCPUCoreCountInfo( physicalPackages, physicalCores, logicalCores );
+
+    return max( physicalCores, logicalCores - 1 );
+}

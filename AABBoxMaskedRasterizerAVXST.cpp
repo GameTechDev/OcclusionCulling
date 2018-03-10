@@ -48,17 +48,8 @@ void AABBoxMaskedRasterizerAVXST::TransformAABBoxAndDepthTest(CPUTCamera *pCamer
 		CalcInsideFrustum(&mpCamera[idx]->mFrustum , 0, mNumModels, idx);
 	}
 
-	// The MaskedOcclusionCulling library assumes transformed vertices in clip space.
-	// We flip the y component becuase this sample uses clockwise winding as front facing.
-	static const float4x4 viewportMatrix(
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, -1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
-		);
-
 	BoxTestSetupSSE setup;
-	setup.Init(mViewMatrix[idx], mProjMatrix[idx], viewportMatrix, mpCamera[idx], mOccludeeSizeThreshold);
+	setup.Init(mViewMatrix[idx], mProjMatrix[idx], viewportMatrixMaskedOcclusionCulling, mpCamera[idx], mOccludeeSizeThreshold);
 
 	__m128 xformedPos[AABB_VERTICES];
 	__m128 cumulativeMatrix[4];

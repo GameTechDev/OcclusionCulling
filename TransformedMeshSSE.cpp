@@ -17,6 +17,7 @@
 #include "TransformedMeshSSE.h"
 #include "DepthBufferRasterizerSSE.h"
 #include "MaskedOcclusionCulling\MaskedOcclusionCulling.h"
+#include "MaskedOcclusionCulling\CullingThreadpool.h"
 
 TransformedMeshSSE::TransformedMeshSSE()
 	: mNumVertices(0),
@@ -40,7 +41,23 @@ void TransformedMeshSSE::Initialize(CPUTMeshDX11* pMesh)
 	mNumTriangles = pMesh->GetTriangleCount();
 	mpVertices   = pMesh->GetDepthVertices();
 	mpIndices    = pMesh->GetDepthIndices();
+
+    mIndicesTheOtherWayAround.clear();
 }
+
+// flip the winding <MaskedOcclusionCulling should be upgraded so it accepts both>
+void TransformedMeshSSE::UpdateReversedWindingIndices( )
+{
+    const int numTriangles = GetNumTriangles( );
+    mIndicesTheOtherWayAround.resize( numTriangles * 3 );
+    for( int i = 0; i < numTriangles; i++ )
+    {
+        mIndicesTheOtherWayAround[i * 3 + 0] = mpIndices[i * 3 + 2];
+        mIndicesTheOtherWayAround[i * 3 + 1] = mpIndices[i * 3 + 1];
+        mIndicesTheOtherWayAround[i * 3 + 2] = mpIndices[i * 3 + 0];
+    }
+}
+
 
 inline __m128d& operator+=(__m128d& v1, const __m128d& v2) {
 	return (v1 = _mm_add_pd(v1, v2));
@@ -383,7 +400,51 @@ void TransformedMeshSSE::BinTransformedTrianglesMT(UINT taskId,
 
 void TransformedMeshSSE::TransformAndRasterizeTrianglesST(__m128 *cumulativeMatrix, MaskedOcclusionCulling *moc, UINT idx)
 {
-	memset(mpXformedPos[idx], 0, sizeof(__m128)*GetNumVertices());
-	MaskedOcclusionCulling::TransformVertices((float*)cumulativeMatrix, (float*)mpVertices, (float*)mpXformedPos[idx], GetNumVertices());
-	moc->RenderTriangles((float*)mpXformedPos[idx], mpIndices, GetNumTriangles(), MaskedOcclusionCulling::CLIP_PLANE_ALL, nullptr);
+    if( mIndicesTheOtherWayAround.size( ) != GetNumTriangles( ) * 3 )
+        UpdateReversedWindingIndices( );
+    assert( mIndicesTheOtherWayAround.size( ) == GetNumTriangles( ) * 3 );
+
+#if 0
+    {
+        rmt_ScopedCPUSample( MemZero, 0 );
+        memset( mpXformedPos[idx], 0, sizeof( __m128 )*GetNumVertices( ) );
+    }
+    {
+        rmt_ScopedCPUSample( TransformVertices, 0 );
+	    MaskedOcclusionCulling::TransformVertices((float*)cumulativeMatrix, (float*)mpVertices, (float*)mpXformedPos[idx], GetNumVertices());
+    }
+    {
+        rmt_ScopedCPUSample( RenderTriangles, 0 );
+    	moc->RenderTriangles((float*)mpXformedPos[idx], mIndicesTheOtherWayAround.data(), GetNumTriangles(), nullptr, MaskedOcclusionCulling::CLIP_PLANE_ALL, nullptr);
+    }
+#else   // transform in-place!
+    {
+        moc->RenderTriangles((float*)mpVertices, mIndicesTheOtherWayAround.data(), GetNumTriangles(), (float*)cumulativeMatrix, MaskedOcclusionCulling::BACKFACE_CW, MaskedOcclusionCulling::CLIP_PLANE_ALL, MaskedOcclusionCulling::VertexLayout(12, 4, 8));
+    }
+#endif
+}
+
+void TransformedMeshSSE::TransformAndRasterizeTrianglesMT( __m128 *cumulativeMatrix, CullingThreadpool * mocThreadpool, UINT idx )
+{
+    if( mIndicesTheOtherWayAround.size( ) != GetNumTriangles( ) * 3 )
+        UpdateReversedWindingIndices( );
+    assert( mIndicesTheOtherWayAround.size( ) == GetNumTriangles( ) * 3 );
+
+#if 0
+    {
+        rmt_ScopedCPUSample( MemZero, 0 );
+        memset( mpXformedPos[idx], 0, sizeof( __m128 )*GetNumVertices( ) );
+    }
+    {
+        rmt_ScopedCPUSample( TransformAndDispatch, 0 );
+        MaskedOcclusionCulling::TransformVertices( (float*)cumulativeMatrix, (float*)mpVertices, (float*)mpXformedPos[idx], GetNumVertices( ) );
+        mocThreadpool->RenderTriangles( (float*)mpXformedPos[idx], mIndicesTheOtherWayAround.data( ), GetNumTriangles( ) );
+    }
+#else   // transform in-place!
+    {
+        mocThreadpool->SetMatrix( (float*)cumulativeMatrix );
+        mocThreadpool->SetVertexLayout( MaskedOcclusionCulling::VertexLayout(12, 4, 8) );   // source data not transformed at all, just worldspace x y z
+        mocThreadpool->RenderTriangles( (float*)mpVertices, mIndicesTheOtherWayAround.data( ), GetNumTriangles( ) );
+    }
+#endif
 }

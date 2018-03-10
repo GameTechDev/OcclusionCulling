@@ -16,6 +16,8 @@
 #include "CPUTFrustum.h"
 #include "CPUTCamera.h"
 
+#include <immintrin.h>
+
 CPUTFrustum::CPUTFrustum()
 {
 	mPlanes = (float *) _aligned_malloc(4 * 2 * sizeof(__m128), sizeof(__m128));

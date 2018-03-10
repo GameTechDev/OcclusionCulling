@@ -84,7 +84,7 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
 
     // window and device parameters
     CPUTWindowCreationParams params;
-    params.deviceParams.refreshRate         = 60;
+    params.deviceParams.refreshRate         = 0; //60;
     params.deviceParams.swapChainBufferCount= 1;
     params.deviceParams.swapChainFormat     = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
     params.deviceParams.swapChainUsage      = DXGI_USAGE_RENDER_TARGET_OUTPUT | DXGI_USAGE_SHADER_INPUT;
@@ -94,6 +94,9 @@ int WINAPI wWinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdL
     cString AssetFilename;
     cString CommandLine(lpCmdLine);
     pSample->CPUTParseCommandLine(CommandLine, &params, &AssetFilename);       
+
+    params.windowWidth = SCREENW;
+    params.windowHeight = SCREENH;
 
     // create the window and device context
     result = pSample->CPUTCreateWindowAndContext(_L("CPUTWindow DirectX 11"), params);

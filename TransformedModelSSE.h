@@ -23,6 +23,7 @@
 
 struct BoxTestSetupSSE;
 class MaskedOcclusionCulling;
+class CullingThreadpool;
 
 class TransformedModelSSE : public HelperSSE
 {
@@ -57,6 +58,7 @@ class TransformedModelSSE : public HelperSSE
 									   USHORT* pNumTrisInBin,
 									   UINT idx);
 		void TransformAndRasterizeTrianglesST(MaskedOcclusionCulling *moc, UINT idx);
+        void TransformAndRasterizeTrianglesMT(CullingThreadpool *mocThreadpool, UINT idx );
 
 		inline UINT GetNumVertices(){return mNumVertices;}
 

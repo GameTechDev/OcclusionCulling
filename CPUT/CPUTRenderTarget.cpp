@@ -233,7 +233,7 @@ HRESULT CPUTRenderTargetDepth::CreateRenderTarget(
         DXGI_FORMAT(depthFormat - 1), //  DXGI_FORMAT_R32_TYPELESS
         mMultiSampleCount, 0,
         D3D11_USAGE_DEFAULT,
-        D3D11_BIND_DEPTH_STENCIL | (supportsResourceView ? D3D11_BIND_SHADER_RESOURCE : 0),
+        (UINT)(D3D11_BIND_DEPTH_STENCIL | (supportsResourceView ? D3D11_BIND_SHADER_RESOURCE : 0)),
         0, // CPU Access flags
         0 // Misc flags
     };

@@ -516,7 +516,7 @@ bool TransformedAABBoxAVX::RasterizeAndDepthTestAABBox(UINT *pRenderTargetPixels
 bool TransformedAABBoxAVX::RasterizeAndDepthTestAABBox(MaskedOcclusionCulling *moc, const __m128 pXformedPos[])
 {
 	MaskedOcclusionCulling::CullingResult res;
-	res = moc->TestTriangles((float*)pXformedPos, sBBIndexList, 12, MaskedOcclusionCulling::CLIP_PLANE_ALL, nullptr, MaskedOcclusionCulling::VertexLayout(sizeof(__m128), 4, 12));
+	res = moc->TestTriangles((float*)pXformedPos, sBBIndexList, 12, nullptr, MaskedOcclusionCulling::BACKFACE_CW, MaskedOcclusionCulling::CLIP_PLANE_ALL, MaskedOcclusionCulling::VertexLayout(sizeof(__m128), 4, 12));
 	if (res != MaskedOcclusionCulling::VISIBLE)
 		return false;
 	else

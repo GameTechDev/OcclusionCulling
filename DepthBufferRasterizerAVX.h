@@ -93,7 +93,7 @@ class DepthBufferRasterizerAVX : public DepthBufferRasterizer, public HelperAVX
 			return averageTime / AVG_COUNTER;
 		}
 		inline UINT GetNumTriangles(){return mNumTriangles1;}
-		inline UINT GetNumRasterizedTriangles(UINT idx) 
+		virtual inline UINT GetNumRasterizedTriangles(UINT idx) 
 		{
 			UINT numRasterizedTris = 0;
 			for(UINT i = 0; i < NUM_TILES; i++)

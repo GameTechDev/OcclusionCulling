@@ -218,3 +218,12 @@ void TransformedModelSSE::TransformAndRasterizeTrianglesST(MaskedOcclusionCullin
 			mpMeshes[meshId].TransformAndRasterizeTrianglesST(mCumulativeMatrix[idx], moc, idx);
 	}
 }
+
+void TransformedModelSSE::TransformAndRasterizeTrianglesMT( CullingThreadpool *mocThreadpool, UINT idx )
+{
+    if( mInsideViewFrustum[idx] && !mTooSmall[idx] )
+    {
+        for( UINT meshId = 0; meshId < mNumMeshes; meshId++ )
+            mpMeshes[meshId].TransformAndRasterizeTrianglesMT( mCumulativeMatrix[idx], mocThreadpool, idx );
+    }
+}

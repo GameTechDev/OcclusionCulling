@@ -22,8 +22,9 @@
 
 // Choose which depth buffer size to use
 // If you change depth buffer size please do a rebuilt all 
-//#define DP_VERY_LARGE
-#define DP_LARGE
+//#define DP_VERY_VERY_LARGE
+#define DP_VERY_LARGE
+//#define DP_LARGE
 //#define DP_MEDIUM
 //#define DP_SMALL
 
@@ -53,7 +54,13 @@ extern LARGE_INTEGER glFrequency;
 
 #define PI 3.1415926535f
 
-#if defined(DP_VERY_LARGE)
+#if defined(DP_VERY_VERY_LARGE)
+    const int SCREENW = 2432;
+    const int SCREENH = 1440;
+
+    const int TILE_WIDTH_IN_PIXELS = 304;
+    const int TILE_HEIGHT_IN_PIXELS = 360;
+#elif defined(DP_VERY_LARGE)
 	const int SCREENW = 1920;
 	const int SCREENH = 1080;
 
@@ -116,6 +123,14 @@ const float4x4 viewportMatrix(
                    0.0f, -0.5f*(float)SCREENH,  0.0f, 0.0f,
                    0.0f,                 0.0f,  1.0f, 0.0f,
     0.5f*(float)SCREENW,  0.5f*(float)SCREENH,  0.0f, 1.0f
+);
+
+// This needs to be checked for correctness
+const float4x4 viewportMatrixMaskedOcclusionCulling(
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 1.0f, 0.0f,
+    0.0f, 0.0f, 0.0f, 1.0f
 );
 
 const int OCCLUDER_SETS = 2;

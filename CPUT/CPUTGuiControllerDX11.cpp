@@ -468,10 +468,14 @@ void CPUTGuiControllerDX11::Draw(ID3D11DeviceContext *pImmediateContext)
 	float total = 0.0f;
 	for(int i = 0; i < AVG_FRAMES; i++)
 	{
-		total += mFPSAvg[mFPSInst];
+		total += mFPSAvg[i];
 	}
 
-	// if we're drawing the FPS counter - update that
+    int windowWidth, windowHeight;
+    CPUTOSServices *pServices = CPUTOSServices::GetOSServices( );
+    pServices->GetClientDimensions( &windowWidth, &windowHeight );
+
+    // if we're drawing the FPS counter - update that
     // We do this independently of uber-buffer updates since we'll have FPS updates every frame,
     // but likely not have control updates every frame
     if(mbDrawFPS)
@@ -482,7 +486,8 @@ void CPUTGuiControllerDX11::Draw(ID3D11DeviceContext *pImmediateContext)
         cString Data;
         {
             wchar_t wcstring[CPUT_MAX_STRING_LENGTH];
-            swprintf_s(&wcstring[0], CPUT_MAX_STRING_LENGTH, _L("FPS:%.2f  (AVG:%.2f)"), fps, total/(float)AVG_FRAMES);
+            float avgFps = total/(float)AVG_FRAMES;
+            swprintf_s(&wcstring[0], CPUT_MAX_STRING_LENGTH, _L("Window res: %d x %d, AVG FPS:%.2f (FPS:%.2f)  "), windowWidth, windowHeight, avgFps, fps);
             Data=wcstring;
         }
 		// build the FPS string
@@ -507,14 +512,11 @@ void CPUTGuiControllerDX11::Draw(ID3D11DeviceContext *pImmediateContext)
 
 
     // set up orthographic display
-    int windowWidth, windowHeight;
     GUIConstantBufferVS ConstantBufferMatrices;
     float znear = 0.1f;
     float zfar = 100.0f;
 	DirectX::XMMATRIX m;
 
-    CPUTOSServices *pServices = CPUTOSServices::GetOSServices();
-    pServices->GetClientDimensions( &windowWidth, &windowHeight );
     m = DirectX::XMMatrixOrthographicOffCenterLH(0, (float)windowWidth, (float)windowHeight, 0, znear, zfar);
     ConstantBufferMatrices.Projection = XMMatrixTranspose( m );
 

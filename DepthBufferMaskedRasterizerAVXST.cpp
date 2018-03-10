@@ -36,15 +36,6 @@ DepthBufferMaskedRasterizerAVXST::~DepthBufferMaskedRasterizerAVXST()
 //-------------------------------------------------------------------------------
 void DepthBufferMaskedRasterizerAVXST::TransformModelsAndRasterizeToDepthBuffer(CPUTCamera *pCamera, UINT idx)
 {
-	// The MaskedOcclusionCulling library assumes transformed vertices in clip space.
-	// We flip the y component becuase this sample uses clockwise winding as front facing.
-	static const float4x4 viewportMatrix(
-		1.0f, 0.0f, 0.0f, 0.0f,
-		0.0f, -1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 0.0f, 1.0f
-		);
-
 	// Set DAZ and FZ MXCSR bits to flush denormals to zero (i.e., make it faster)
 	_mm_setcsr(_mm_getcsr() | 0x8040);
 
@@ -52,7 +43,7 @@ void DepthBufferMaskedRasterizerAVXST::TransformModelsAndRasterizeToDepthBuffer(
 	mpCamera[idx] = pCamera;
 	
 	BoxTestSetupSSE setup;
-	setup.Init(mpViewMatrix[idx], mpProjMatrix[idx], viewportMatrix, pCamera, mOccluderSizeThreshold);
+	setup.Init(mpViewMatrix[idx], mpProjMatrix[idx], viewportMatrixMaskedOcclusionCulling, pCamera, mOccluderSizeThreshold);
 
 	if(mEnableFCulling)
 	{
@@ -69,7 +60,9 @@ void DepthBufferMaskedRasterizerAVXST::TransformModelsAndRasterizeToDepthBuffer(
 		}
 	}
 
-	mMaskedOcclusionCulling->ClearBuffer();
+    {
+        mMaskedOcclusionCulling->ClearBuffer();
+    }
 	ActiveModels(idx);
 	TransformAndRasterizeMeshes(idx);
 
@@ -96,8 +89,11 @@ void DepthBufferMaskedRasterizerAVXST::ActiveModels(UINT idx)
 //-------------------------------------------------
 void DepthBufferMaskedRasterizerAVXST::TransformAndRasterizeMeshes(UINT idx)
 {
-	// Sort models roughly from front to back
-	std::sort(mpModelIndexA[idx], mpModelIndexA[idx] + mNumModelsA[idx], [=](int a, int b) { return mpTransformedModels1[a].GetDepth() < mpTransformedModels1[b].GetDepth(); });
+
+    {
+	    // Sort models roughly from front to back
+	    std::sort(mpModelIndexA[idx], mpModelIndexA[idx] + mNumModelsA[idx], [=](int a, int b) { return mpTransformedModels1[a].GetDepth() < mpTransformedModels1[b].GetDepth(); });
+    }
 
 	for (UINT active = 0; active < mNumModelsA[idx]; active++)
 	{
