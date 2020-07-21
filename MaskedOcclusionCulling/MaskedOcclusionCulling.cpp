@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright 2017 Intel Corporation
+// Copyright 2017-2020 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License.  You may obtain a copy
@@ -54,7 +54,7 @@ static MaskedOcclusionCulling::Implementation DetectCPUFeatures(MaskedOcclusionC
 
     //cpuIdEx.resize(regs[0] - 0x80000000);
     size_t cpuIdExCount = regs[0] - 0x80000000;
-    CpuInfo * cpuIdEx = (CpuInfo*)alignedAlloc( 64, sizeof( CpuInfo ) * cpuIdCount );
+    CpuInfo * cpuIdEx = (CpuInfo*)alignedAlloc( 64, sizeof( CpuInfo ) * cpuIdExCount );
 
     for (size_t i = 0; i < cpuIdExCount; ++i)
 		__cpuidex(cpuIdEx[i].regs, 0x80000000 + (int)i, 0);
